@@ -29,7 +29,7 @@ services:
 #      - ./.env
 
   frontend:
-    image: annakharatova/frontend:latest
+    image: annakharatova/partners-map:latest
     restart: always
     expose:
       - "3000"
