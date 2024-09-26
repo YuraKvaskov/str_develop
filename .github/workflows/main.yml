@@ -54,11 +54,32 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
+            # Переход в директорию с docker-compose.yaml
+            cd /root/str
+            echo "Current directory: $(pwd)"
+
+            # Проверка наличия файла docker-compose.yaml
+            if [ ! -f docker-compose.yaml ]; then
+              echo "docker-compose.yaml not found!"
+              exit 1
+            fi
+
+            echo "docker-compose.yaml found."
+            echo "Listing files in /root/str:"
+            ls -al
+
+            # Проверим синтаксис файла docker-compose.yaml
+            sudo docker compose -f docker-compose.yaml config
+            if [ $? -ne 0 ]; then
+              echo "Syntax error in docker-compose.yaml."
+              exit 1
+            fi
+
+            # Убедимся, что .env файл создается правильно
             sudo rm -f .env
             sudo touch .env
             sudo chmod 666 .env
 
-            # Используйте tee для правильного добавления строк в файл .env
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} | sudo tee -a .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} | sudo tee -a .env
             echo DB_NAME=${{ secrets.DB_NAME }} | sudo tee -a .env
@@ -67,11 +88,13 @@ jobs:
             echo DB_HOST=${{ secrets.DB_HOST }} | sudo tee -a .env
             echo DB_PORT=${{ secrets.DB_PORT }} | sudo tee -a .env
 
-            # Используем точку с запятой для разделения команд docker compose
-            sudo docker compose stop;
-            sudo docker compose rm -f backend;
-            sudo docker compose pull backend;
-            sudo docker compose rm -f frontend;
-            sudo docker compose pull frontend;
-            sudo docker compose up -d --build;
-  
+            echo "Contents of .env:"
+            cat .env
+
+            # Используем полный путь к файлу docker-compose.yaml
+            sudo docker compose -f /root/str/docker-compose.yaml stop
+            sudo docker compose -f /root/str/docker-compose.yaml rm -f backend
+            sudo docker compose -f /root/str/docker-compose.yaml pull backend
+            sudo docker compose -f /root/str/docker-compose.yaml rm -f frontend
+            sudo docker compose -f /root/str/docker-compose.yaml pull frontend
+            sudo docker compose -f /root/str/docker-compose.yaml up -d --build
