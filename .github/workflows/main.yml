@@ -36,7 +36,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Pull frontend image
-        run: docker pull annakharatova/frontend:latest
+        run: docker pull annakharatova/partners-map:latest
 
 
   deploy:
