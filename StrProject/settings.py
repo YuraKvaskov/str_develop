@@ -1,18 +1,13 @@
 import os
 from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 SECRET_KEY = 'django-insecure-=8l2u16gq&z3(20l&lo$3ag&8d#ihipdx#2%q9e5j82)w#jq^3'
-
 DEBUG = True
-
 ALLOWED_HOSTS = ['*']
-
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
 
 INSTALLED_APPS = [
     'django.contrib.admin',
