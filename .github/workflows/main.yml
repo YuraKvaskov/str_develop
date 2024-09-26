@@ -42,7 +42,7 @@ jobs:
           password: ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Pull frontend image
-        run: docker pull ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+        run: docker pull annakharatova/frontend:latest
 
   deploy:
     name: Deploying on remote server
