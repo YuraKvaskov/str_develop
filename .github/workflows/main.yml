@@ -21,7 +21,6 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
           source: "./*"
           target: "/root/str/"
           strip_components: 0
@@ -30,12 +29,11 @@ jobs:
           debug: true
 
       - name: Executing remote ssh commands to deploy
-        uses: appleboy/ssh-action@v0.1.4
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             # Переход в директорию проекта
             cd /root/str
@@ -48,8 +46,8 @@ jobs:
               echo "docker-compose.yaml not found!"
               exit 1
             fi
-            echo "docker-compose.yaml found."            
-            
+            echo "docker-compose.yaml found."
+
             # Создание файла .env
             rm -f .env
             touch .env
@@ -71,3 +69,4 @@ jobs:
 
             # Сборка и запуск контейнеров
             docker compose up -d --build
+          debug: true
