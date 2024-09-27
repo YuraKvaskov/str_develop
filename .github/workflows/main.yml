@@ -24,27 +24,18 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Push to Docker Hub
+      - name: Build and Push Backend Image
         uses: docker/build-push-action@v2
         with:
           context: .
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
-  pull_frontend_from_docker_hub:
-    name: Pulling frontend image from Docker Hub
-    runs-on: ubuntu-latest
-    steps:
-      - name: Pull frontend image
-        run: docker pull annakharatova/partners-map:latest
-
-
   deploy:
     name: Deploying on remote server
     runs-on: ubuntu-latest
     needs:
       - build_and_push_backend_to_docker_hub
-      - pull_frontend_from_docker_hub
     steps:
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@master
@@ -54,28 +45,28 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           passphrase: ${{ secrets.PASSPHRASE }}
           script: |
-            # Переход в директорию с docker-compose.yaml
+            # Переход в директорию с docker-compose.yml
             cd /root/str
             echo "Current directory: $(pwd)"
 
-            # Проверка наличия файла docker-compose.yaml
-            if [ ! -f docker-compose.yaml ]; then
-              echo "docker-compose.yaml not found!"
+            # Проверка наличия файла docker-compose.yml
+            if [ ! -f docker-compose.yml ]; then
+              echo "docker-compose.yml not found!"
               exit 1
             fi
 
-            echo "docker-compose.yaml found."
+            echo "docker-compose.yml found."
             echo "Listing files in /root/str:"
             ls -al
 
-            # Проверим синтаксис файла docker-compose.yaml
-            sudo docker compose -f docker-compose.yaml config
+            # Проверим синтаксис файла docker-compose.yml
+            sudo docker compose -f docker-compose.yml config
             if [ $? -ne 0 ]; then
-              echo "Syntax error in docker-compose.yaml."
+              echo "Syntax error in docker-compose.yml."
               exit 1
             fi
 
-            # Убедимся, что .env файл создается правильно
+            # Создаем файл .env с переменными окружения
             sudo rm -f .env
             sudo touch .env
             sudo chmod 666 .env
@@ -91,10 +82,14 @@ jobs:
             echo "Contents of .env:"
             cat .env
 
-            # Используем полный путь к файлу docker-compose.yaml
-            sudo docker compose -f /root/str/docker-compose.yaml stop
-            sudo docker compose -f /root/str/docker-compose.yaml rm -f backend
-            sudo docker compose -f /root/str/docker-compose.yaml pull backend
-            sudo docker compose -f /root/str/docker-compose.yaml rm -f frontend
-            sudo docker compose -f /root/str/docker-compose.yaml pull frontend
-            sudo docker compose -f /root/str/docker-compose.yaml up -d --build
+            # Остановка и удаление существующих контейнеров
+            sudo docker compose down
+
+            # Пул актуальных образов
+            sudo docker compose pull web
+
+            # Сборка образа Nginx с обновленным фронтендом
+            sudo docker compose build --no-cache nginx
+
+            # Запуск сервисов
+            sudo docker compose up -d
