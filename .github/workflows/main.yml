@@ -1,4 +1,4 @@
-name: Deploy
+name: Build, Push and Deploy
 
 on:
   push:
@@ -6,84 +6,164 @@ on:
       - main
 
 jobs:
-  deploy:
-    name: Deploy to Server
+  build-and-deploy:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout code
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Отладка: вывод списка файлов в рабочей директории
-      - name: Debug - List files in workspace
-        run: |
-          echo "Listing files in the workspace:"
-          ls -R
+      # 2. Set up Docker Buildx for multi-platform builds
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
 
-      # Копируем docker-compose.yaml на сервер
-      - name: Copy docker-compose.yaml to server
-        uses: appleboy/scp-action@v0.1.7
+      # 3. Log in to Docker Hub
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v2
         with:
-          source: "docker-compose.yaml" # Путь к файлу, как в структуре вашего проекта
-          target: "/root/str/" # Удаленный путь на сервере
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.7
+      # 4. Build and push backend image
+      - name: Build and push backend image
+        uses: docker/build-push-action@v3
         with:
-          source: "nginx/*"
-          target: "/root/str/nginx/"
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          strip_components: 1 # Убирает одну вложенность
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
-      # Выполнение команд на сервере для деплоя
-      - name: Executing remote ssh commands to deploy
+      # 5. Build and push frontend image
+      - name: Build and push frontend image
+        uses: docker/build-push-action@v3
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+
+      # 6. Deploy to server using SSH
+      - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Переход в директорию проекта
+            # Переход в директорию с docker-compose.yaml на сервере
             cd /root/str
-            echo "Current directory: $(pwd)"
-            echo "Listing files in $(pwd):"
-            ls -la
+            
+            # Обновляем образы с Docker Hub
+            docker-compose pull
 
-            # Проверка наличия docker-compose.yaml
-            if [ ! -f docker-compose.yaml ]; then
-              echo "docker-compose.yaml not found!"
-              exit 1
-            fi
-            echo "docker-compose.yaml found."
+            # Перезапускаем контейнеры
+            docker-compose up -d
 
-            # Проверка наличия nginx/nginx.Dockerfile
-            if [ ! -f nginx/nginx.Dockerfile ]; then
-              echo "nginx/nginx.Dockerfile not found!"
-              exit 1
-            fi
-            echo "nginx/nginx.Dockerfile found."
+            # Вывод состояния контейнеров для проверки
+            docker-compose ps
 
-            # Создание файла .env с переменными окружения
-            rm -f .env
-            touch .env
-            chmod 600 .env
+      # 7. (Optional) Notify about the deployment status
+      - name: Notify success
+        if: success()
+        run: echo "Deployment was successful!"
 
-            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
 
-            echo "Contents of .env:"
-            cat .env
 
-            # Запуск docker-compose
-            docker compose pull
-            docker compose up -d --build
+
+
+
+
+
+
+
+
+#name: Deploy
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#
+#jobs:
+#  deploy:
+#    name: Deploy to Server
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#
+#      # Отладка: вывод списка файлов в рабочей директории
+#      - name: Debug - List files in workspace
+#        run: |
+#          echo "Listing files in the workspace:"
+#          ls -R
+#
+#      # Копируем local-docker-compose.yaml на сервер
+#      - name: Copy local-docker-compose.yaml to server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          source: "local-docker-compose.yaml" # Путь к файлу, как в структуре вашего проекта
+#          target: "/root/str/" # Удаленный путь на сервере
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#
+#      - name: Copy nginx directory to server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          source: "nginx/*"
+#          target: "/root/str/nginx/"
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          strip_components: 1 # Убирает одну вложенность
+#
+#      # Выполнение команд на сервере для деплоя
+#      - name: Executing remote ssh commands to deploy
+#        uses: appleboy/ssh-action@v0.1.7
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          script: |
+#            # Переход в директорию проекта
+#            cd /root/str
+#            echo "Current directory: $(pwd)"
+#            echo "Listing files in $(pwd):"
+#            ls -la
+#
+#            # Проверка наличия docker-compose.yaml
+#            if [ ! -f docker-compose.yaml ]; then
+#              echo "docker-compose.yaml not found!"
+#              exit 1
+#            fi
+#            echo "docker-compose.yaml found."
+#
+#            # Проверка наличия nginx/nginx.Dockerfile
+#            if [ ! -f nginx/nginx.Dockerfile ]; then
+#              echo "nginx/nginx.Dockerfile not found!"
+#              exit 1
+#            fi
+#            echo "nginx/nginx.Dockerfile found."
+#
+#            # Создание файла .env с переменными окружения
+#            rm -f .env
+#            touch .env
+#            chmod 600 .env
+#
+#            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+#            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+#            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+#            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+#            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+#            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+#            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+#
+#            echo "Contents of .env:"
+#            cat .env
+#
+#            # Запуск docker-compose
+#            docker compose pull
+#            docker compose up -d --build

@@ -12,7 +12,9 @@ services:
       - backend_network
 
   backend:
-    image: your_username/backend:latest  # Образ на Docker Hub
+    build:
+      context: .
+      dockerfile: Dockerfile  # Dockerfile для вашего Django-приложения
     restart: always
     env_file:
       - ./.env  # Файл с переменными окружения для Django-приложения
@@ -27,7 +29,9 @@ services:
       - "8000"  # Порт, который будет использоваться для взаимодействия с Nginx
 
   frontend:
-    image: your_username/frontend:latest  # Образ на Docker Hub
+    build:
+      context: ./frontend  # Директория с вашим фронтенд-приложением
+      dockerfile: Dockerfile  # Dockerfile для сборки фронтенда
     restart: "no"  # Нет необходимости в постоянном перезапуске фронтенда
     environment:
       - NODE_ENV=production  # Переменная окружения для сборки фронтенда
