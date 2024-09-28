@@ -28,6 +28,7 @@ jobs:
           rm: true
           debug: true
 
+
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -74,10 +75,67 @@ jobs:
             # Остановка и удаление существующих контейнеров
             docker compose down
 
+            # Загрузка последнего образа фронтенда
+            docker compose pull frontend
+
             # Сборка образов с флагами --no-cache и --pull always
             docker compose build --no-cache --pull always
 
             # Запуск контейнеров
             docker compose up -d
-          debug: true
+        debug: true
+
+
+#      - name: Executing remote ssh commands to deploy
+#        uses: appleboy/ssh-action@v0.1.7
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          script: |
+#            # Переход в директорию проекта
+#            cd /root/str
+#            echo "Current directory: $(pwd)"
+#            echo "Listing files in $(pwd):"
+#            ls -la
+#
+#            # Проверка наличия docker-compose.yaml
+#            if [ ! -f docker-compose.yaml ]; then
+#              echo "docker-compose.yaml not found!"
+#              exit 1
+#            fi
+#            echo "docker-compose.yaml found."
+#
+#            # Проверка наличия nginx.Dockerfile
+#            if [ ! -f nginx/nginx.Dockerfile ]; then
+#              echo "nginx/nginx.Dockerfile not found!"
+#              exit 1
+#            fi
+#            echo "nginx/nginx.Dockerfile found."
+#
+#            # Создание файла .env
+#            rm -f .env
+#            touch .env
+#            chmod 600 .env
+#
+#            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+#            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+#            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+#            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+#            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+#            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+#            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+#
+#            echo "Contents of .env:"
+#            cat .env
+#
+#            # Остановка и удаление существующих контейнеров
+#            docker compose down
+#
+#            # Сборка образов с флагами --no-cache и --pull always
+#            docker compose build --no-cache --pull always
+#
+#            # Запуск контейнеров
+#            docker compose up -d
+#          debug: true
 
