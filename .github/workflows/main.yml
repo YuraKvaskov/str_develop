@@ -74,10 +74,13 @@ jobs:
             # Остановка и удаление существующих контейнеров
             docker compose down
 
-            # Сборка и запуск контейнеров с флагом --pull
-            docker compose up -d --build --no-cache --pull always
+            # Сборка образов с флагами --no-cache и --pull always
+            docker compose build --no-cache --pull always
 
+            # Запуск контейнеров
+            docker compose up -d
           debug: true
+
 
 
 #      - name: Executing remote ssh commands to deploy
