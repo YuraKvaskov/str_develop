@@ -74,41 +74,11 @@ jobs:
             # Остановка и удаление существующих контейнеров
             docker compose down
 
-            # Сборка и запуск контейнеров
-            docker compose up -d --build
+            # Сборка и запуск контейнеров с флагом --pull
+            docker compose up -d --build --pull
           debug: true
 
 
-#name: Stroymash Workflow
-#
-#on:
-#  push:
-#    branches: [ main ]
-#    paths-ignore:
-#      - '**/README.md'
-#
-#jobs:
-#
-#  deploy:
-#    name: Deploying on remote server
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Check out the repo
-#        uses: actions/checkout@v3
-#
-#      - name: Copy files via SSH
-#        uses: appleboy/scp-action@v0.1.5
-#        with:
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USER }}
-#          key: ${{ secrets.SSH_KEY }}
-#          source: "./*"
-#          target: "/root/str/"
-#          strip_components: 0
-#          overwrite: true
-#          rm: true
-#          debug: true
-#
 #      - name: Executing remote ssh commands to deploy
 #        uses: appleboy/ssh-action@v0.1.7
 #        with:
@@ -128,6 +98,13 @@ jobs:
 #              exit 1
 #            fi
 #            echo "docker-compose.yaml found."
+#
+#            # Проверка наличия nginx.Dockerfile
+#            if [ ! -f nginx/nginx.Dockerfile ]; then
+#              echo "nginx/nginx.Dockerfile not found!"
+#              exit 1
+#            fi
+#            echo "nginx/nginx.Dockerfile found."
 #
 #            # Создание файла .env
 #            rm -f .env
