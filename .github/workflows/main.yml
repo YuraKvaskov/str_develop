@@ -48,10 +48,11 @@ jobs:
       - name: Build and push frontend image
         uses: docker/build-push-action@v3
         with:
-          context: ./frontend  # Указываем директорию, где находятся все файлы для сборки фронтенда
-          file: ./frontend/Dockerfile  # Указываем полный путь к Dockerfile от корня репозитория
+          context: .  # Контекст указывает на корень репозитория
+          file: ./frontend/Dockerfile  # Указываем полный путь к Dockerfile
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+
 
 
   deploy:
