@@ -1,3 +1,4 @@
+version: '3'
 services:
   backend:
     build:
@@ -20,16 +21,6 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: always
-    environment:
-      - NODE_ENV=production
-    volumes:
-      - frontend_build:/app/build
-
   nginx:
     build:
       context: .
@@ -42,7 +33,6 @@ services:
       - frontend_build:/usr/share/nginx/html  # Используем собранные файлы фронтенда
     depends_on:
       - backend
-      - frontend
 
 volumes:
   static_value:
