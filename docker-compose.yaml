@@ -20,6 +20,14 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data/
 
+  frontend:
+    image: annakharatova/partners-map:latest
+    restart: always
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+
   nginx:
     build:
       context: .
@@ -31,6 +39,7 @@ services:
       - media_value:/var/html/media/
     depends_on:
       - web
+      - frontend
 
 volumes:
   static_value:
