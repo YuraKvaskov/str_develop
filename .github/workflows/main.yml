@@ -75,8 +75,6 @@ jobs:
             # Остановка и удаление существующих контейнеров
             docker compose down
             docker image prune -f
-
-
             # Загрузка последнего образа фронтенда
             docker compose pull frontend
 
