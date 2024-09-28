@@ -8,9 +8,11 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'your-default-secret-key')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+# STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+STATIC_ROOT = "/var/html/static/"
+MEDIA_ROOT = "/var/html/media/"
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
