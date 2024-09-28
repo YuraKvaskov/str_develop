@@ -14,22 +14,27 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Create project directory on server
-        uses: appleboy/ssh-action@v0.1.7
+      # Копируем docker-compose.yml на сервер
+      - name: Copy docker-compose.yml to server
+        uses: appleboy/scp-action@v0.1.7
         with:
+          source: "docker-compose.yml"
+          target: "/root/str/"
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: |
-            mkdir -p /root/str
 
-      - name: Copy docker-compose.yml and nginx to server
-        run: |
-          # Копирование docker-compose.yml
-          scp -o StrictHostKeyChecking=no -i ${{ secrets.SSH_KEY }} docker-compose.yml ${{ secrets.USER }}@${{ secrets.HOST }}:/root/str/
-          # Копирование папки nginx
-          scp -r -o StrictHostKeyChecking=no -i ${{ secrets.SSH_KEY }} nginx/ ${{ secrets.USER }}@${{ secrets.HOST }}:/root/str/nginx/
+      # Копируем папку nginx на сервер
+      - name: Copy nginx directory to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          source: "nginx"
+          target: "/root/str/nginx"
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
 
+      # Выполнение команд на сервере для деплоя
       - name: Executing remote ssh commands to deploy
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -57,7 +62,7 @@ jobs:
             fi
             echo "nginx/nginx.Dockerfile found."
 
-            # Создание файла .env
+            # Создание файла .env с переменными окружения
             rm -f .env
             touch .env
             chmod 600 .env
