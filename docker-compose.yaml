@@ -1,4 +1,3 @@
-version: '3'
 services:
   backend:
     build:
@@ -20,6 +19,16 @@ services:
       - ./.env
     volumes:
       - postgres_data:/var/lib/postgresql/data/
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    restart: "no"  # Нет необходимости в постоянном запуске
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - frontend_build:/app/build
 
   nginx:
     build:
