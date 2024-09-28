@@ -31,14 +31,16 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
       # Копируем папку nginx на сервер
+      # Копируем содержимое папки nginx на сервер без создания лишней вложенной директории
       - name: Copy nginx directory to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          source: "nginx" # Путь к папке, как в структуре вашего проекта
-          target: "/root/str/nginx" # Удаленный путь на сервере
+          source: "nginx/*" # Копируем содержимое папки nginx, а не саму папку
+          target: "/root/str/nginx" # Содержимое будет скопировано в папку nginx
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
+
 
       # Выполнение команд на сервере для деплоя
       - name: Executing remote ssh commands to deploy
