@@ -1,50 +1,47 @@
 services:
-  backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    restart: always
-    env_file:
-      - ./.env
-    volumes:
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
-    depends_on:
-      - db
-
   db:
     image: postgres:13
     restart: always
     env_file:
-      - ./.env
+      - ./.env  # Файл с переменными окружения для базы данных
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/  # Хранение данных базы
+    networks:
+      - backend_network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Dockerfile для вашего Django-приложения
+    restart: always
+    env_file:
+      - ./.env  # Файл с переменными окружения для Django-приложения
+    volumes:
+      - static_value:/var/html/static/  # Том для статических файлов
+      - media_value:/var/html/media/  # Том для медиа-файлов
+    depends_on:
+      - db
+    networks:
+      - backend_network
+    expose:
+      - "8000"  # Порт, который будет использоваться для взаимодействия с Nginx
 
   frontend:
     build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    restart: "no"  # Нет необходимости в постоянном запуске
+      context: ./frontend  # Директория с вашим фронтенд-приложением
+      dockerfile: Dockerfile  # Dockerfile для сборки фронтенда
+    restart: "no"  # Нет необходимости в постоянном перезапуске фронтенда
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=production  # Переменная окружения для сборки фронтенда
     volumes:
-      - frontend_build:/app/build
+      - frontend_build:/app/dist  # Том для сборки фронтенда, меняем build на dist
+    networks:
+      - backend_network
 
   nginx:
     build:
       context: .
-      dockerfile: nginx/nginx.Dockerfile
+      dockerfile: nginx/nginx.Dockerfile  # Dockerfile для Nginx
     ports:
-      - "80:80"
+      - "80:80"  # Публикация порта 80 для доступа к приложению
     volumes:
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
-      - frontend_build:/usr/share/nginx/html  # Используем собранные файлы фронтенда
-    depends_on:
-      - backend
-
-volumes:
-  static_value:
-  media_value:
-  postgres_data:
-  frontend_build:
