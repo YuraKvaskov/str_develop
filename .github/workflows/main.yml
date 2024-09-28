@@ -145,9 +145,9 @@ jobs:
             echo "Contents of .env:"
             cat .env
             
-            # Запуск docker-compose
-            docker compose pull || docker-compose pull
-            docker compose up -d --build || docker-compose up -d --build
+            # Запуск docker compose
+            docker compose pull || docker compose pull
+            docker compose up -d --build || docker compose up -d --build
 
       - name: Notify success
         if: success()
