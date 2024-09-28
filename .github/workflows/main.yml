@@ -30,14 +30,15 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
 
-      - name: Copy nginx directory to server using rsync
-        uses: appleboy/ssh-action@v0.1.7
+      - name: Copy nginx directory to server
+        uses: appleboy/scp-action@v0.1.7
         with:
+          source: "nginx/*"
+          target: "/root/str/nginx/"
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          script: |
-            rsync -avz --delete --exclude '.git' ./nginx/ /root/str/nginx/
+          strip_components: 1 # Убирает одну вложенность
 
       # Выполнение команд на сервере для деплоя
       - name: Executing remote ssh commands to deploy
