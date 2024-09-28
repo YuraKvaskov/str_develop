@@ -76,14 +76,12 @@ jobs:
             docker compose down
             docker image prune -f
             # Загрузка последнего образа фронтенда
-            docker compose pull frontend
 
             # Сборка образов с флагами --no-cache и --pull always
             docker compose build --no-cache --pull always
 
             # Запуск контейнеров
             docker compose up -d
-            docker image prune -f
 
 #      - name: Executing remote ssh commands to deploy
 #        uses: appleboy/ssh-action@v0.1.7

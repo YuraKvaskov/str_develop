@@ -23,12 +23,12 @@ services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
     restart: always
-    expose:
-      - "3000"
     environment:
       - NODE_ENV=production
+    volumes:
+      - frontend_build:/app/build
 
   nginx:
     build:
@@ -39,6 +39,7 @@ services:
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
+      - frontend_build:/usr/share/nginx/html  # Используем собранные файлы фронтенда
     depends_on:
       - backend
       - frontend
@@ -47,3 +48,4 @@ volumes:
   static_value:
   media_value:
   postgres_data:
+  frontend_build:
