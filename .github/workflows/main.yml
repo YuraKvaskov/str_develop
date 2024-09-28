@@ -34,6 +34,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
+        with:
+          submodules: true  # Загружаем подмодули, если они есть
+          fetch-depth: 0  # Клонируем весь репозиторий
 
       - name: Verify frontend directory contents
         run: |
