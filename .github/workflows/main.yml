@@ -83,7 +83,6 @@ jobs:
 
             # Запуск контейнеров
             docker compose up -d
-        debug: true
 
 
 #      - name: Executing remote ssh commands to deploy
