@@ -45,3 +45,20 @@ services:
     ports:
       - "80:80"  # Публикация порта 80 для доступа к приложению
     volumes:
+      - static_value:/var/html/static/  # Том для статических файлов
+      - media_value:/var/html/media/  # Том для медиа-файлов
+      - frontend_build:/usr/share/nginx/html  # Том для скомпилированных файлов фронтенда (путь изменен на dist)
+    depends_on:
+      - backend  # Сначала должен запуститься бэкенд
+      - frontend  # И затем фронтенд
+    networks:
+      - backend_network
+
+  volumes:
+    static_value:  # Том для хранения статических файлов
+    media_value:  # Том для хранения медиа-файлов
+    postgres_data:  # Том для хранения данных PostgreSQL
+    frontend_build:  # Том для хранения собранных файлов фронтенда
+
+  networks:
+    backend_network:  # Общая сеть для всех контейнеров
