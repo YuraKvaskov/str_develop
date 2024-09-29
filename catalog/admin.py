@@ -19,8 +19,8 @@ class SparePartImageInline(admin.TabularInline):
 
 @admin.register(SparePart)
 class SparePartAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine', 'is_hit')
-    list_filter = ('engine', 'is_hit', 'groups')
+    list_display = ('name', 'article', 'engine_cat', 'is_hit')
+    list_filter = ('engine_cat', 'is_hit', 'groups')
     search_fields = ('name', 'article')
     inlines = [SparePartImageInline]
     filter_horizontal = ('groups',)
@@ -39,11 +39,11 @@ class SparePartInline(admin.TabularInline):
 
 @admin.register(RepairKit)
 class RepairKitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine', 'is_hit')
-    list_filter = ('engine', 'is_hit', 'groups')
+    list_display = ('name', 'article', 'engine_cat', 'is_hit')
+    list_filter = ('engine_cat', 'is_hit', 'groups')
     search_fields = ('name', 'article')
     inlines = [RepairKitPartInline]
-    filter_horizontal = ('groups', 'parts',)
+    filter_horizontal = ('groups',)
     exclude = ('parts',)
 
 

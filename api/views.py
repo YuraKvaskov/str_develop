@@ -108,7 +108,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
 class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SparePart.objects.all().select_related('material', 'engine_cat').prefetch_related('groups', 'images')
     serializer_class = SparePartSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['name', 'article']
     filterset_fields = {
         'engine_cat': ['exact'],
@@ -129,7 +129,7 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
         Prefetch('repairkitpart_set', queryset=RepairKitPart.objects.select_related('spare_part'))
     )
     serializer_class = RepairKitSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['name', 'article']
     filterset_fields = {
         'engine_cat': ['exact'],
@@ -145,7 +145,7 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CatalogListView(generics.ListAPIView):
     serializer_class = CatalogItemSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     filterset_fields = {
         'engine_cat': ['exact'],
         'groups__name': ['in'],
