@@ -26,6 +26,8 @@ INSTALLED_APPS = [
     'drf_yasg',
     'api.apps.ApiConfig',
     'str.apps.StrConfig',
+    'catalog.apps.CatalogConfig',
+
 ]
 
 MIDDLEWARE = [

@@ -1,15 +1,17 @@
+from django.db.models import Q, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics
-
+from rest_framework import generics, filters, viewsets
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
+from catalog.models import RepairKit, SparePart, RepairKitPart, Group, Material, EngineCat
 from str.models import Tag, Partner, Engine, City
 from .filters import PartnerFilter, CityFilter
-from .serializers import TagSerializer, PartnerSerializer, EngineSerializer, CitySerializer
-
+from .serializers import TagSerializer, PartnerSerializer, EngineSerializer, CitySerializer, RepairKitSerializer, \
+    SparePartSerializer, CatalogItemSerializer, RepairKitListSerializer, SparePartListSerializer, GroupSerializer, \
+    MaterialSerializer, EngineCatSerializer
 
 import logging
 
@@ -86,6 +88,131 @@ class CityDetailView(generics.RetrieveAPIView):
 class TagListView(generics.ListAPIView):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+
+
+class EngineCatViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = EngineCat.objects.all()
+    serializer_class = EngineCatSerializer
+
+
+class MaterialViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Material.objects.all()
+    serializer_class = MaterialSerializer
+
+
+class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = Group.objects.all()
+    serializer_class = GroupSerializer
+
+
+class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = SparePart.objects.all().select_related('material', 'engine_cat').prefetch_related('groups', 'images')
+    serializer_class = SparePartSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    search_fields = ['name', 'article']
+    filterset_fields = {
+        'engine_cat': ['exact'],
+        'groups__name': ['in'],
+        'is_hit': ['exact'],
+    }
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return SparePartListSerializer
+        return SparePartSerializer
+
+
+class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
+    queryset = RepairKit.objects.all().select_related('material', 'engine_cat').prefetch_related(
+        'groups',
+        'images',
+        Prefetch('repairkitpart_set', queryset=RepairKitPart.objects.select_related('spare_part'))
+    )
+    serializer_class = RepairKitSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    search_fields = ['name', 'article']
+    filterset_fields = {
+        'engine_cat': ['exact'],
+        'groups__name': ['in'],
+        'is_hit': ['exact'],
+    }
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RepairKitListSerializer
+        return RepairKitSerializer
+
+
+class CatalogListView(generics.ListAPIView):
+    serializer_class = CatalogItemSerializer
+    filter_backends = [filters.SearchFilter, filters.OrderingFilter, filters.DjangoFilterBackend]
+    filterset_fields = {
+        'engine_cat': ['exact'],
+        'groups__name': ['in'],
+        'is_hit': ['exact'],
+    }
+    search_fields = ['name', 'article']
+
+    def get_queryset(self):
+        spare_parts = SparePart.objects.all()
+        repair_kits = RepairKit.objects.all()
+
+        # Фильтрация по параметрам запроса
+        engine_cat_id = self.request.query_params.get('engine_cat')
+        is_kit = self.request.query_params.get('is_kit')
+        group = self.request.query_params.get('group')
+        is_hit = self.request.query_params.get('is_hit')
+        search = self.request.query_params.get('search')
+
+        if engine_cat_id:
+            spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
+            repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
+
+        if is_kit is not None:
+            if is_kit.lower() == 'true':
+                spare_parts = SparePart.objects.none()
+            elif is_kit.lower() == 'false':
+                repair_kits = RepairKit.objects.none()
+
+        if group:
+            groups = group.split(',')
+            spare_parts = spare_parts.filter(groups__name__in=groups).distinct()
+            repair_kits = repair_kits.filter(groups__name__in=groups).distinct()
+
+        if is_hit is not None:
+            if is_hit.lower() == 'true':
+                spare_parts = spare_parts.filter(is_hit=True)
+                repair_kits = repair_kits.filter(is_hit=True)
+            elif is_hit.lower() == 'false':
+                spare_parts = spare_parts.filter(is_hit=False)
+                repair_kits = repair_kits.filter(is_hit=False)
+
+        if search:
+            spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
+            repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
+
+        return list(spare_parts) + list(repair_kits)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+class CatalogDetailView(generics.RetrieveAPIView):
+    serializer_class = SparePartSerializer  # Или RepairKitSerializer
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return SparePart.objects.all() | RepairKit.objects.all()
+
+    def get_serializer(self, *args, **kwargs):
+        instance = self.get_object()
+        if isinstance(instance, SparePart):
+            serializer = SparePartSerializer(instance, context={'request': self.request})
+        elif isinstance(instance, RepairKit):
+            serializer = RepairKitSerializer(instance, context={'request': self.request})
+        return serializer
 
 
 # class ProductListView(generics.ListAPIView):
