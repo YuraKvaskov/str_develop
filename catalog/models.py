@@ -1,3 +1,4 @@
+from colorfield.fields import ColorField
 from django.db import models
 
 
@@ -10,7 +11,7 @@ class EngineCat(models.Model):
 
 class Material(models.Model):
     name = models.CharField(max_length=100)
-    color = models.CharField(max_length=50)
+    color = ColorField(default='#FF0000')
     image = models.ImageField(upload_to='materials/')
 
     def __str__(self):
@@ -72,3 +73,10 @@ class RepairKitPart(models.Model):
     def __str__(self):
         return f"{self.spare_part.name} x{self.quantity} in {self.repair_kit.name}"
 
+
+class RepairKitImage(models.Model):
+    repair_kit = models.ForeignKey(RepairKit, on_delete=models.CASCADE, related_name='images')
+    image = models.ImageField(upload_to='repair_kits/')
+
+    def __str__(self):
+        return f"Image for {self.repair_kit.name}"

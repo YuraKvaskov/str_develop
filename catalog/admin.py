@@ -8,61 +8,46 @@ from .models import (
     SparePart,
     SparePartImage,
     RepairKit,
-    RepairKitPart
+    RepairKitPart, RepairKitImage
 )
 
 
+# Inline для изображений запчастей
 class SparePartImageInline(admin.TabularInline):
     model = SparePartImage
     extra = 1
 
-
-@admin.register(SparePart)
-class SparePartAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine_cat', 'is_hit')
-    list_filter = ('engine_cat', 'is_hit', 'groups')
-    search_fields = ('name', 'article')
-    inlines = [SparePartImageInline]
-    filter_horizontal = ('groups',)
-
-
+# Inline для частей ремкомплекта
 class RepairKitPartInline(admin.TabularInline):
     model = RepairKitPart
     extra = 1
-    autocomplete_fields = ['spare_part']
 
-
-class SparePartInline(admin.TabularInline):
-    model = RepairKit.parts.through
+# Inline для изображений ремкомплекта
+class RepairKitImageInline(admin.TabularInline):
+    model = RepairKitImage
     extra = 1
-
-
-@admin.register(RepairKit)
-class RepairKitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine_cat', 'is_hit')
-    list_filter = ('engine_cat', 'is_hit', 'groups')
-    search_fields = ('name', 'article')
-    inlines = [RepairKitPartInline]
-    filter_horizontal = ('groups',)
-    exclude = ('parts',)
-
 
 @admin.register(EngineCat)
 class EngineCatAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
-
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color')
-    search_fields = ('name', 'color')
+    list_display = ('name', 'color_display', 'image_tag')
+    search_fields = ('name',)
+
+    def color_display(self, obj):
+        return format_html(
+            '<div style="width: 20px; height: 20px; background-color: {}; border: 1px solid #000;"></div>',
+            obj.color
+        )
+    color_display.short_description = 'Цвет'
 
     def image_tag(self, obj):
         if obj.image:
             return format_html('<img src="{}" style="max-height: 50px;" />', obj.image.url)
         return "-"
-
     image_tag.short_description = 'Изображение'
 
 @admin.register(Group)
@@ -70,3 +55,46 @@ class GroupAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
+@admin.register(SparePart)
+class SparePartAdmin(admin.ModelAdmin):
+    list_display = ('name', 'article', 'engine_cat', 'is_hit')
+    list_filter = ('engine', 'is_hit', 'groups')
+    search_fields = ('name', 'article')
+    inlines = [SparePartImageInline]
+    filter_horizontal = ('groups',)
+
+@admin.register(RepairKit)
+class RepairKitAdmin(admin.ModelAdmin):
+    list_display = ('name', 'article', 'engine_cat', 'is_hit')
+    list_filter = ('engine', 'is_hit', 'groups')
+    search_fields = ('name', 'article')
+    inlines = [RepairKitPartInline, RepairKitImageInline]
+    filter_horizontal = ('groups',)
+
+@admin.register(SparePartImage)
+class SparePartImageAdmin(admin.ModelAdmin):
+    list_display = ('spare_part', 'image_tag')
+    search_fields = ('spare_part__name',)
+
+    def image_tag(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 50px;" />', obj.image.url)
+        return "-"
+    image_tag.short_description = 'Изображение'
+
+@admin.register(RepairKitPart)
+class RepairKitPartAdmin(admin.ModelAdmin):
+    list_display = ('repair_kit', 'spare_part', 'quantity')
+    search_fields = ('repair_kit__name', 'spare_part__name')
+    list_filter = ('repair_kit', 'spare_part')
+
+@admin.register(RepairKitImage)
+class RepairKitImageAdmin(admin.ModelAdmin):
+    list_display = ('repair_kit', 'image_tag')
+    search_fields = ('repair_kit__name',)
+
+    def image_tag(self, obj):
+        if obj.image:
+            return format_html('<img src="{}" style="max-height: 50px;" />', obj.image.url)
+        return "-"
+    image_tag.short_description = 'Изображение'

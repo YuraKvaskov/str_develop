@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, Group, Material, EngineCat
+from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, Group, Material, EngineCat, \
+    RepairKitImage
 from str.models import Tag, Partner, Engine, City
 
 
@@ -103,8 +104,14 @@ class RepairKitPartSerializer(serializers.ModelSerializer):
         fields = ['spare_part', 'quantity']
 
 
+class RepairKitImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = RepairKitImage
+        fields = ['id', 'image']
+
+
 class RepairKitSerializer(serializers.ModelSerializer):
-    images = SparePartImageSerializer(many=True, read_only=True)
+    images = RepairKitImageSerializer(many=True, read_only=True)
     material = MaterialSerializer()
     engine = EngineSerializer()
     groups = GroupSerializer(many=True, read_only=True)
@@ -137,9 +144,8 @@ class RepairKitListSerializer(serializers.ModelSerializer):
     def get_main_image(self, obj):
         image = obj.images.first()
         if image:
-            return self.context['request'].build_absolute_uri(image.image.url)
+            return image.image.url
         return None
-
 
 class CatalogItemSerializer(serializers.Serializer):
     type = serializers.CharField()
@@ -149,14 +155,13 @@ class CatalogItemSerializer(serializers.Serializer):
     main_image = serializers.URLField()
 
     def to_representation(self, instance):
-        request = self.context.get('request')
         if isinstance(instance, SparePart):
             return {
                 'type': 'spare_part',
                 'id': instance.id,
                 'name': instance.name,
                 'article': instance.article,
-                'main_image': request.build_absolute_uri(instance.images.first().image.url) if instance.images.exists() else None,
+                'main_image': instance.images.first().image.url if instance.images.exists() else None,
             }
         elif isinstance(instance, RepairKit):
             return {
@@ -164,7 +169,7 @@ class CatalogItemSerializer(serializers.Serializer):
                 'id': instance.id,
                 'name': instance.name,
                 'article': instance.article,
-                'main_image': request.build_absolute_uri(instance.images.first().image.url) if instance.images.exists() else None,
+                'main_image': instance.images.first().image.url if instance.images.exists() else None,
             }
         return super().to_representation(instance)
 
