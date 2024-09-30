@@ -27,6 +27,7 @@ INSTALLED_APPS = [
     'api.apps.ApiConfig',
     'str.apps.StrConfig',
     'catalog.apps.CatalogConfig',
+    'colorfield',
 
 ]
 
