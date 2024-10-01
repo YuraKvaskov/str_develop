@@ -9,7 +9,7 @@ from api.views import (
     SparePartViewSet,
     RepairKitViewSet,
     CatalogListView,
-    CatalogDetailView
+    # CatalogDetailView
 )
 
 router = DefaultRouter()
@@ -22,5 +22,5 @@ router.register(r'repair-kits', RepairKitViewSet, basename='repairkit')
 urlpatterns = [
     path('', include(router.urls)),
     path('catalog/', CatalogListView.as_view(), name='catalog-list'),
-    path('catalog/<int:id>/', CatalogDetailView.as_view(), name='catalog-detail'),
+    # path('catalog/<int:id>/', CatalogDetailView.as_view(), name='catalog-detail'),
 ]

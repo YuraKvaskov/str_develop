@@ -1,6 +1,7 @@
 from django.db.models import Q, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import generics, filters, viewsets
 
 from rest_framework.views import APIView
@@ -9,11 +10,14 @@ from rest_framework.response import Response
 from catalog.models import RepairKit, SparePart, RepairKitPart, Group, Material, EngineCat
 from str.models import Tag, Partner, Engine, City
 from .filters import PartnerFilter, CityFilter
+from .schema_descriptions import repair_kit_search_example, repair_kit_filter_example, spare_part_search_example, spare_part_filter_example
+
 from .serializers import TagSerializer, PartnerSerializer, EngineSerializer, CitySerializer, RepairKitSerializer, \
     SparePartSerializer, CatalogItemSerializer, RepairKitListSerializer, SparePartListSerializer, GroupSerializer, \
     MaterialSerializer, EngineCatSerializer
 
 import logging
+
 
 logger = logging.getLogger(__name__)
 
@@ -105,6 +109,20 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GroupSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[spare_part_search_example]),
+            OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[spare_part_filter_example]),
+            OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[spare_part_filter_example]),
+            OpenApiParameter(name='is_hit', description='Фильтрация по хитам продаж', required=False, type=str, enum=['true', 'false'], examples=[spare_part_filter_example]),
+        ],
+        examples=[
+            spare_part_search_example,
+            spare_part_filter_example,
+        ]
+    )
+)
 class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SparePart.objects.all().select_related('material', 'engine_cat').prefetch_related('groups', 'images')
     serializer_class = SparePartSerializer
@@ -122,6 +140,20 @@ class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
         return SparePartSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(
+        parameters=[
+            OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[repair_kit_search_example]),
+            OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[repair_kit_filter_example]),
+            OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[repair_kit_filter_example]),
+            OpenApiParameter(name='is_hit', description='Фильтрация по хитам продаж', required=False, type=str, enum=['true', 'false'], examples=[repair_kit_filter_example]),
+        ],
+        examples=[
+            repair_kit_search_example,
+            repair_kit_filter_example,
+        ]
+    )
+)
 class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = RepairKit.objects.all().select_related('material', 'engine_cat').prefetch_related(
         'groups',
@@ -197,62 +229,3 @@ class CatalogListView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True, context={'request': request})
         return Response(serializer.data)
-
-
-class CatalogDetailView(generics.RetrieveAPIView):
-    serializer_class = SparePartSerializer  # Или RepairKitSerializer
-    lookup_field = 'id'
-
-    def get_queryset(self):
-        return SparePart.objects.all() | RepairKit.objects.all()
-
-    def get_serializer(self, *args, **kwargs):
-        instance = self.get_object()
-        if isinstance(instance, SparePart):
-            serializer = SparePartSerializer(instance, context={'request': self.request})
-        elif isinstance(instance, RepairKit):
-            serializer = RepairKitSerializer(instance, context={'request': self.request})
-        return serializer
-
-
-# class ProductListView(generics.ListAPIView):
-#     serializer_class = ProductSerializer
-#     pagination_class = PageNumberPagination
-#     filter_backends = [SearchFilter]
-#     search_fields = ['name', 'part_number']
-#
-#     def get_queryset(self):
-#         queryset = Product.objects.filter(available=True)  # Фильтрация по полю available
-#
-#         engine_id = self.request.query_params.get('engine_id', None)
-#         category_id = self.request.query_params.get('category_id', None)
-#
-#         if engine_id:
-#             queryset = queryset.filter(engine_id=engine_id)
-#
-#         if category_id:
-#             queryset = queryset.filter(category_id=category_id)
-#
-#         return queryset
-#
-
-# class ProductDetailView(generics.RetrieveAPIView):
-#     queryset = Product.objects.all()
-#     serializer_class = ProductSerializer
-#
-#
-# class CategoryListAPIView(generics.ListAPIView):
-#     serializer_class = CategorySerializer
-#
-#     def get_queryset(self):
-#         engine_id = self.request.query_params.get('engine_id')
-#         if engine_id:
-#             queryset = Category.objects.filter(engine_id=engine_id, parent_category=None)
-#         else:
-#             queryset = Category.objects.filter(parent_category=None)
-#         return queryset
-#
-#
-# class CategoryDetailAPIView(generics.RetrieveAPIView):
-#     queryset = Category.objects.all()
-#     serializer_class = CategorySerializer
