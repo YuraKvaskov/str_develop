@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     'str.apps.StrConfig',
     'catalog.apps.CatalogConfig',
     'colorfield',
+    'drf_spectacular',
 
 ]
 
@@ -44,6 +45,7 @@ MIDDLEWARE = [
 CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOW_CREDENTIALS = True
 REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
@@ -55,6 +57,14 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.BasicAuthentication',
     ),
 }
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Проект Точки продаж АО Строймаш API',
+    'DESCRIPTION': 'API для сервиса по поиску точек продаж Строймаш и каталога',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
+    # Дополнительные настройки
+}
+
 ROOT_URLCONF = 'StrProject.urls'
 TEMPLATES = [
     {

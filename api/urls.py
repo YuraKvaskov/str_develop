@@ -1,4 +1,5 @@
 from django.urls import path, include
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
 from .views import PartnerListView, PartnerDetailView, EngineListAPIView, EngineDetailAPIView, CityListView, \
     CityDetailView, TagListView
@@ -14,5 +15,7 @@ urlpatterns = [
     path('cities/<int:pk>/', CityDetailView.as_view(), name='city-detail'),
     path('tags/', TagListView.as_view(), name='tag-list'),
     path('catalog/', include('catalog.urls')),  # Добавляем маршруты приложения catalog
-
+    path('schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    path('docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
 ]
