@@ -2,6 +2,11 @@ from decimal import Decimal
 import math
 import requests
 from .models import City
+import logging
+
+
+logger = logging.getLogger(__name__)
+
 
 def get_coordinates(address):
     api_key = 'ce6cab7e-5c86-4204-85bb-b90c99d28cd4'
@@ -45,17 +50,19 @@ def get_city_coordinates(city_name):
     url = f'https://geocode-maps.yandex.ru/1.x/?apikey={api_key}&geocode={city_name}&format=json'
     response = requests.get(url)
 
-    if response.status_code != 200:
-        # Ошибка HTTP-запроса
+    if response.status_code == 200:
+        data = response.json()
+        found_objects = int(
+            data['response']['GeoObjectCollection']['metaDataProperty']['GeocoderResponseMetaData']['found'])
+
+        if found_objects > 0:
+            coordinates = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
+            longitude, latitude = map(float, coordinates.split())  # Изменен порядок координат
+            logger.info(f"Found coordinates for {city_name}: {latitude}, {longitude}")
+            return latitude, longitude  # Широта, долгота
+        else:
+            logger.warning(f"No coordinates found for {city_name}")
+            return None, None
+    else:
+        logger.error(f"Error fetching data from Yandex API: {response.status_code}")
         return None, None
-
-    data = response.json()
-    found_objects = int(
-        data['response']['GeoObjectCollection']['metaDataProperty']['GeocoderResponseMetaData']['found'])
-
-    if found_objects > 0:
-        coordinates = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
-        # Изменение порядка на longitude и latitude
-        longitude, latitude = map(float, coordinates.split())
-        return latitude, longitude  # Широта, долгота
-    return None, None
