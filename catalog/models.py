@@ -12,7 +12,6 @@ class EngineCat(models.Model):
 class Material(models.Model):
     name = models.CharField(max_length=100)
     color = ColorField(default='#FF0000')
-    image = models.ImageField(upload_to='materials/')
 
     def __str__(self):
         return self.name
