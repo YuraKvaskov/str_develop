@@ -56,19 +56,19 @@ class Partner(models.Model):
         return self.name
 
 
-@receiver(post_save, sender=Partner)
-def geocode_partner_address(sender, instance, created, **kwargs):
-    if created:
-        address = instance.address
-        api_key = 'ce6cab7e-5c86-4204-85bb-b90c99d28cd4'
-        response = requests.get(
-            f'https://geocode-maps.yandex.ru/1.x/?apikey={api_key}&geocode={address}&format=json')
-        data = response.json()
-        found_objects = int(
-            data['response']['GeoObjectCollection']['metaDataProperty']['GeocoderResponseMetaData']['found'])
-        if found_objects > 0:
-            coordinates = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
-            longitude, latitude = map(float, coordinates.split())  # Поменяйте порядок!
-            instance.latitude = latitude
-            instance.longitude = longitude
-            instance.save()
+# @receiver(post_save, sender=Partner)
+# def geocode_partner_address(sender, instance, created, **kwargs):
+#     if created:
+#         address = instance.address
+#         api_key = 'ce6cab7e-5c86-4204-85bb-b90c99d28cd4'
+#         response = requests.get(
+#             f'https://geocode-maps.yandex.ru/1.x/?apikey={api_key}&geocode={address}&format=json')
+#         data = response.json()
+#         found_objects = int(
+#             data['response']['GeoObjectCollection']['metaDataProperty']['GeocoderResponseMetaData']['found'])
+#         if found_objects > 0:
+#             coordinates = data['response']['GeoObjectCollection']['featureMember'][0]['GeoObject']['Point']['pos']
+#             longitude, latitude = map(float, coordinates.split())  # Поменяйте порядок!
+#             instance.latitude = latitude
+#             instance.longitude = longitude
+#             instance.save()

@@ -4,7 +4,7 @@ from pathlib import Path
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-SECRET_KEY = os.getenv('SECRET_KEY', 'your-default-secret-key')
+SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
 STATIC_URL = '/static/'
@@ -131,3 +131,37 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,  # Не отключать встроенные логгеры Django
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
+            'style': '{',
+        },
+        'simple': {
+            'format': '{levelname} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'file': {
+            'level': 'INFO',  # Для производственной среды обычно устанавливается INFO или выше
+            'class': 'logging.handlers.RotatingFileHandler',
+            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),  # Лог-файлы в отдельной папке
+            'maxBytes': 1024*1024*10,  # 10 MB
+            'backupCount': 5,          # Хранить до 5 резервных копий
+            'formatter': 'verbose',
+        },
+        'console': {
+            'level': 'WARNING',  # В производстве можно уменьшить объем консольных логов
+            'class': 'logging.StreamHandler',
+            'formatter': 'simple',
+        },
+    },
+    'root': {  # Корневой логгер для всего проекта
+        'handlers': ['file', 'console'],
+        'level': 'INFO',
+    },
+}
