@@ -17,6 +17,7 @@ services:
     volumes:
       - static_value:/var/html/static/  # Том для статических файлов
       - media_value:/var/html/media/  # Том для медиа-файлов
+      - ./logs:/app/logs
     depends_on:
       - db
     networks:

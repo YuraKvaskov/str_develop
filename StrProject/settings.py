@@ -4,6 +4,8 @@ from pathlib import Path
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+LOG_DIR = os.getenv('DJANGO_LOG_DIR', os.path.join(BASE_DIR, 'logs'))
+os.makedirs(LOG_DIR, exist_ok=True)
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
@@ -149,7 +151,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',  # Для производственной среды обычно устанавливается INFO или выше
             'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),  # Лог-файлы в отдельной папке
+            'filename': os.path.join(LOG_DIR, 'debug.log'),  # Лог-файлы в директории logs
             'maxBytes': 1024*1024*10,  # 10 MB
             'backupCount': 5,          # Хранить до 5 резервных копий
             'formatter': 'verbose',
