@@ -32,9 +32,10 @@ class EngineCatAdmin(admin.ModelAdmin):
     list_display = ('name',)
     search_fields = ('name',)
 
+
 @admin.register(Material)
 class MaterialAdmin(admin.ModelAdmin):
-    list_display = ('name', 'color_display', 'image_tag')
+    list_display = ('name', 'color_display')
     search_fields = ('name',)
 
     def color_display(self, obj):
@@ -43,12 +44,6 @@ class MaterialAdmin(admin.ModelAdmin):
             obj.color
         )
     color_display.short_description = 'Цвет'
-
-    def image_tag(self, obj):
-        if obj.image:
-            return format_html('<img src="{}" style="max-height: 50px;" />', obj.image.url)
-        return "-"
-    image_tag.short_description = 'Изображение'
 
 @admin.register(Group)
 class GroupAdmin(admin.ModelAdmin):
