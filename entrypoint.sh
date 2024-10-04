@@ -1,4 +1,5 @@
 #!/bin/bash
+python manage.py makemigrations --noinput
 
 # Выполнение миграций
 python manage.py migrate --noinput
