@@ -39,8 +39,6 @@ class EngineCatSerializer(serializers.ModelSerializer):
 
 
 class MaterialSerializer(serializers.ModelSerializer):
-    image = serializers.ImageField(use_url=True)
-
     class Meta:
         model = Material
         fields = ['id', 'name', 'color']
