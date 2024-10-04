@@ -61,7 +61,7 @@ class SparePartImageSerializer(serializers.ModelSerializer):
 class SparePartSerializer(serializers.ModelSerializer):
     images = SparePartImageSerializer(many=True, read_only=True)
     material = MaterialSerializer()
-    engine = EngineSerializer()
+    engine_cat = EngineCatSerializer()
     groups = GroupSerializer(many=True, read_only=True)
 
     class Meta:
@@ -73,7 +73,7 @@ class SparePartSerializer(serializers.ModelSerializer):
             'material',
             'special_feature',
             'material_properties',
-            'engine',
+            'engine_cat',
             'is_hit',
             'groups',
             'images',
@@ -111,7 +111,7 @@ class RepairKitImageSerializer(serializers.ModelSerializer):
 class RepairKitSerializer(serializers.ModelSerializer):
     images = RepairKitImageSerializer(many=True, read_only=True)
     material = MaterialSerializer()
-    engine = EngineSerializer()
+    engine_cat = EngineCatSerializer()
     groups = GroupSerializer(many=True, read_only=True)
     parts = RepairKitPartSerializer(source='repairkitpart_set', many=True, read_only=True)
 
@@ -124,7 +124,7 @@ class RepairKitSerializer(serializers.ModelSerializer):
             'material',
             'special_feature',
             'material_properties',
-            'engine',
+            'engine_cat',
             'is_hit',
             'groups',
             'images',
