@@ -43,7 +43,7 @@ class MaterialSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Material
-        fields = ['id', 'name', 'color', 'image']
+        fields = ['id', 'name', 'color']
 
 
 class GroupSerializer(serializers.ModelSerializer):
