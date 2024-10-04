@@ -27,7 +27,7 @@ class Group(models.Model):
 class SparePart(models.Model):
     name = models.CharField(max_length=255)
     article = models.CharField(max_length=50, unique=True)
-    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='spare_parts')
+    materials = models.ManyToManyField(Material, related_name='spare_parts')  # Изменили на ManyToManyField
     special_feature = models.CharField(max_length=255, blank=True, null=True)
     material_properties = models.TextField(blank=True, null=True)
     engine_cat = models.ForeignKey(EngineCat, on_delete=models.CASCADE, related_name='spare_parts')
@@ -49,7 +49,7 @@ class SparePartImage(models.Model):
 class RepairKit(models.Model):
     name = models.CharField(max_length=255)
     article = models.CharField(max_length=50, unique=True)
-    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name='repair_kits')
+    materials = models.ManyToManyField(Material, related_name='repair_kits')  # Изменили на ManyToManyField
     special_feature = models.CharField(max_length=255, blank=True, null=True)
     material_properties = models.TextField(blank=True, null=True)
     engine_cat = models.ForeignKey(EngineCat, on_delete=models.CASCADE, related_name='repair_kits')
