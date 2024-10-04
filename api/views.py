@@ -124,7 +124,7 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     )
 )
 class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = SparePart.objects.all().select_related('material', 'engine_cat').prefetch_related('groups', 'images')
+    queryset = SparePart.objects.all().prefetch_related('materials', 'engine_cat', 'groups', 'images')
     serializer_class = SparePartSerializer
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     search_fields = ['name', 'article']
@@ -155,9 +155,7 @@ class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
     )
 )
 class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
-    queryset = RepairKit.objects.all().select_related('material', 'engine_cat').prefetch_related(
-        'groups',
-        'images',
+    queryset = RepairKit.objects.all().prefetch_related('materials', 'engine_cat', 'groups', 'images').prefetch_related(
         Prefetch('repairkitpart_set', queryset=RepairKitPart.objects.select_related('spare_part'))
     )
     serializer_class = RepairKitSerializer
