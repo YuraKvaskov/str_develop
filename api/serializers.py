@@ -149,6 +149,8 @@ class CatalogItemSerializer(serializers.Serializer):
     name = serializers.CharField()
     article = serializers.CharField()
     main_image = serializers.URLField()
+    engine_cat = serializers.CharField(required=False)  # Добавлено поле для категории двигателя
+    groups = serializers.ListField(child=serializers.CharField(), required=False)  # Добавлено поле для групп
 
     def to_representation(self, instance):
         if isinstance(instance, SparePart):
@@ -158,6 +160,8 @@ class CatalogItemSerializer(serializers.Serializer):
                 'name': instance.name,
                 'article': instance.article,
                 'main_image': instance.images.first().image.url if instance.images.exists() else None,
+                'engine_cat': instance.engine_cat.name,  # Выводим имя категории двигателя
+                'groups': [group.name for group in instance.groups.all()],  # Выводим имена групп
             }
         elif isinstance(instance, RepairKit):
             return {
@@ -166,6 +170,8 @@ class CatalogItemSerializer(serializers.Serializer):
                 'name': instance.name,
                 'article': instance.article,
                 'main_image': instance.images.first().image.url if instance.images.exists() else None,
+                'engine_cat': instance.engine_cat.name,  # Выводим имя категории двигателя
+                'groups': [group.name for group in instance.groups.all()],  # Выводим имена групп
             }
         return super().to_representation(instance)
 

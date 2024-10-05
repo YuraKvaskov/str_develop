@@ -174,7 +174,7 @@ class CatalogListView(generics.ListAPIView):
     filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
     filterset_fields = {
         'engine_cat': ['exact'],
-        'groups__name': ['in'],
+        'groups': ['in'],  # Фильтр по ID групп
     }
     search_fields = ['name', 'article']
 
@@ -184,30 +184,24 @@ class CatalogListView(generics.ListAPIView):
 
         # Фильтрация по параметрам запроса
         engine_cat_id = self.request.query_params.get('engine_cat')
-        is_kit = self.request.query_params.get('is_kit')
-        group = self.request.query_params.get('group')
+        group_ids = self.request.query_params.get('group')
         search = self.request.query_params.get('search')
 
         if engine_cat_id:
             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
             repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
 
-        if is_kit is not None:
-            if is_kit.lower() == 'true':
-                spare_parts = SparePart.objects.none()
-            elif is_kit.lower() == 'false':
-                repair_kits = RepairKit.objects.none()
-
-        if group:
-            groups = group.split(',')
-            spare_parts = spare_parts.filter(groups__name__in=groups).distinct()
-            repair_kits = repair_kits.filter(groups__name__in=groups).distinct()
+        if group_ids:
+            group_ids = group_ids.split(',')
+            spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
+            repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
 
         if search:
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
 
-        return list(spare_parts) + list(repair_kits)
+        # Объединение двух QuerySet с использованием chain
+        return chain(spare_parts, repair_kits)
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()

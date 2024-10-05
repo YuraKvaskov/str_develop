@@ -13,22 +13,22 @@ from api.views import (
 )
 
 urlpatterns = [
-    path('engines/', EngineCatViewSet.as_view({'get': 'list'}), name='engine-list'),
-    path('engines/<int:pk>/', EngineCatViewSet.as_view({'get': 'retrieve'}), name='engine-detail'),
+    path('engines/', EngineCatViewSet.as_view({'get': 'list'}), name='engine_list'),
+    path('engines/<int:pk>/', EngineCatViewSet.as_view({'get': 'retrieve'}), name='engine_detail'),
 
-    path('materials/', MaterialViewSet.as_view({'get': 'list'}), name='material-list'),
-    path('materials/<int:pk>/', MaterialViewSet.as_view({'get': 'retrieve'}), name='material-detail'),
+    path('materials/', MaterialViewSet.as_view({'get': 'list'}), name='material_list'),
+    path('materials/<int:pk>/', MaterialViewSet.as_view({'get': 'retrieve'}), name='material_detail'),
 
-    path('groups/', GroupViewSet.as_view({'get': 'list'}), name='group-list'),
-    path('groups/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve'}), name='group-detail'),
+    path('groups/', GroupViewSet.as_view({'get': 'list'}), name='group_list'),
+    path('groups/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve'}), name='group_detail'),
 
-    path('spare-parts/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart-list'),
-    path('spare-parts/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart-detail'),
+    path('spare-parts/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart_list'),
+    path('spare-parts/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart_detail'),
 
-    path('repair-kits/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit-list'),
-    path('repair-kits/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit-detail'),
+    path('repair-kits/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit_list'),
+    path('repair-kits/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit_detail'),
 
-    path('catalog/', CatalogListView.as_view(), name='catalog-list'),
+    path('catalog/', CatalogListView.as_view(), name='catalog_list'),
 ]
 # router = DefaultRouter()
 # router.register(r'engines', EngineCatViewSet, basename='engine')
