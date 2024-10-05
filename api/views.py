@@ -171,23 +171,17 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
         return RepairKitSerializer
 
 
-class CatalogListView(generics.ListAPIView):
+class CatalogListView(APIView):
     serializer_class = CatalogItemSerializer
-    filter_backends = [filters.SearchFilter, filters.OrderingFilter, DjangoFilterBackend]
-    filterset_fields = {
-        'engine_cat': ['exact'],
-        'groups': ['in'],  # Фильтр по ID групп
-    }
-    search_fields = ['name', 'article']
 
-    def get_queryset(self):
+    def get(self, request, *args, **kwargs):
         spare_parts = SparePart.objects.all()
         repair_kits = RepairKit.objects.all()
 
-        # Фильтрация по параметрам запроса
-        engine_cat_id = self.request.query_params.get('engine_cat')
-        group_ids = self.request.query_params.get('group')
-        search = self.request.query_params.get('search')
+        # Применение фильтров
+        engine_cat_id = request.query_params.get('engine_cat')
+        group_ids = request.query_params.get('group')
+        search = request.query_params.get('search')
 
         if engine_cat_id:
             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
@@ -202,10 +196,12 @@ class CatalogListView(generics.ListAPIView):
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
 
-        # Объединение двух QuerySet с использованием chain
-        return chain(spare_parts, repair_kits)
+        # Объединение QuerySet в список
+        items = list(spare_parts) + list(repair_kits)
 
-    def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True, context={'request': request})
+        # Опционально: реализуйте пагинацию, если это необходимо
+        # Вы можете вручную выполнить пагинацию списка 'items' здесь
+
+        # Сериализация объединенного списка
+        serializer = self.serializer_class(items, many=True, context={'request': request})
         return Response(serializer.data)
