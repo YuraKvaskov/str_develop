@@ -31,7 +31,6 @@ class SparePart(models.Model):
     special_feature = models.CharField(max_length=255, blank=True, null=True)
     material_properties = models.TextField(blank=True, null=True)
     engine_cat = models.ForeignKey(EngineCat, on_delete=models.CASCADE, related_name='spare_parts')
-    is_hit = models.BooleanField(default=False)
     groups = models.ManyToManyField(Group, related_name='spare_parts', blank=True)
 
     def __str__(self):
@@ -53,7 +52,6 @@ class RepairKit(models.Model):
     special_feature = models.CharField(max_length=255, blank=True, null=True)
     material_properties = models.TextField(blank=True, null=True)
     engine_cat = models.ForeignKey(EngineCat, on_delete=models.CASCADE, related_name='repair_kits')
-    is_hit = models.BooleanField(default=False)
     groups = models.ManyToManyField(Group, related_name='repair_kits', blank=True)
     parts = models.ManyToManyField(SparePart, through='RepairKitPart', related_name='repair_kits')
 

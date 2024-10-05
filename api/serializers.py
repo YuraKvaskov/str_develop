@@ -74,7 +74,6 @@ class SparePartSerializer(serializers.ModelSerializer):
             'special_feature',
             'material_properties',
             'engine_cat',
-            'is_hit',
             'groups',
             'images',
         ]
@@ -125,7 +124,6 @@ class RepairKitSerializer(serializers.ModelSerializer):
             'special_feature',
             'material_properties',
             'engine_cat',
-            'is_hit',
             'groups',
             'images',
             'parts',

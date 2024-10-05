@@ -115,7 +115,6 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
             OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[spare_part_search_example]),
             OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[spare_part_filter_example]),
             OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[spare_part_filter_example]),
-            OpenApiParameter(name='is_hit', description='Фильтрация по хитам продаж', required=False, type=str, enum=['true', 'false'], examples=[spare_part_filter_example]),
         ],
         examples=[
             spare_part_search_example,
@@ -131,7 +130,6 @@ class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {
         'engine_cat': ['exact'],
         'groups__name': ['in'],
-        'is_hit': ['exact'],
     }
 
     def get_serializer_class(self):
@@ -146,7 +144,6 @@ class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
             OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[repair_kit_search_example]),
             OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[repair_kit_filter_example]),
             OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[repair_kit_filter_example]),
-            OpenApiParameter(name='is_hit', description='Фильтрация по хитам продаж', required=False, type=str, enum=['true', 'false'], examples=[repair_kit_filter_example]),
         ],
         examples=[
             repair_kit_search_example,
@@ -164,7 +161,6 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
     filterset_fields = {
         'engine_cat': ['exact'],
         'groups__name': ['in'],
-        'is_hit': ['exact'],
     }
 
     def get_serializer_class(self):
@@ -179,7 +175,6 @@ class CatalogListView(generics.ListAPIView):
     filterset_fields = {
         'engine_cat': ['exact'],
         'groups__name': ['in'],
-        'is_hit': ['exact'],
     }
     search_fields = ['name', 'article']
 
@@ -191,7 +186,6 @@ class CatalogListView(generics.ListAPIView):
         engine_cat_id = self.request.query_params.get('engine_cat')
         is_kit = self.request.query_params.get('is_kit')
         group = self.request.query_params.get('group')
-        is_hit = self.request.query_params.get('is_hit')
         search = self.request.query_params.get('search')
 
         if engine_cat_id:
@@ -208,14 +202,6 @@ class CatalogListView(generics.ListAPIView):
             groups = group.split(',')
             spare_parts = spare_parts.filter(groups__name__in=groups).distinct()
             repair_kits = repair_kits.filter(groups__name__in=groups).distinct()
-
-        if is_hit is not None:
-            if is_hit.lower() == 'true':
-                spare_parts = spare_parts.filter(is_hit=True)
-                repair_kits = repair_kits.filter(is_hit=True)
-            elif is_hit.lower() == 'false':
-                spare_parts = spare_parts.filter(is_hit=False)
-                repair_kits = repair_kits.filter(is_hit=False)
 
         if search:
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
