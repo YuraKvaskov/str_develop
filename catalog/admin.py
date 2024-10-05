@@ -52,16 +52,16 @@ class GroupAdmin(admin.ModelAdmin):
 
 @admin.register(SparePart)
 class SparePartAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine_cat', 'is_hit')
-    list_filter = ('engine_cat', 'is_hit', 'groups')
+    list_display = ('name', 'article', 'engine_cat')
+    list_filter = ('engine_cat', 'groups')
     search_fields = ('name', 'article')
     inlines = [SparePartImageInline]
     filter_horizontal = ('groups',)
 
 @admin.register(RepairKit)
 class RepairKitAdmin(admin.ModelAdmin):
-    list_display = ('name', 'article', 'engine_cat', 'is_hit')
-    list_filter = ('engine_cat', 'is_hit', 'groups')
+    list_display = ('name', 'article', 'engine_cat')
+    list_filter = ('engine_cat', 'groups')
     search_fields = ('name', 'article')
     inlines = [RepairKitPartInline, RepairKitImageInline]
     filter_horizontal = ('groups',)
