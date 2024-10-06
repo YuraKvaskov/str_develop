@@ -22,11 +22,11 @@ urlpatterns = [
     path('groups/', GroupViewSet.as_view({'get': 'list'}), name='group_list'),
     path('groups/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve'}), name='group_detail'),
 
-    path('spare-parts/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart_list'),
-    path('spare-parts/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart_detail'),
+    path('spare_parts/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart_list'),
+    path('spare_parts/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart_detail'),
 
-    path('repair-kits/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit_list'),
-    path('repair-kits/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit_detail'),
+    path('repair_kits/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit_list'),
+    path('repair_kits/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit_detail'),
 
     path('catalog/', CatalogListView.as_view(), name='catalog_list'),
 ]
