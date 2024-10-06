@@ -13,20 +13,20 @@ from api.views import (
 )
 
 urlpatterns = [
-    path('engines/', EngineCatViewSet.as_view({'get': 'list'}), name='engine_list'),
-    path('engines/<int:pk>/', EngineCatViewSet.as_view({'get': 'retrieve'}), name='engine_detail'),
+    path('engine/', EngineCatViewSet.as_view({'get': 'list'}), name='engine_list'),
+    path('engine/<int:pk>/', EngineCatViewSet.as_view({'get': 'retrieve'}), name='engine_detail'),
 
-    path('materials/', MaterialViewSet.as_view({'get': 'list'}), name='material_list'),
-    path('materials/<int:pk>/', MaterialViewSet.as_view({'get': 'retrieve'}), name='material_detail'),
+    path('material/', MaterialViewSet.as_view({'get': 'list'}), name='material_list'),
+    path('material/<int:pk>/', MaterialViewSet.as_view({'get': 'retrieve'}), name='material_detail'),
 
-    path('groups/', GroupViewSet.as_view({'get': 'list'}), name='group_list'),
-    path('groups/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve'}), name='group_detail'),
+    path('group/', GroupViewSet.as_view({'get': 'list'}), name='group_list'),
+    path('group/<int:pk>/', GroupViewSet.as_view({'get': 'retrieve'}), name='group_detail'),
 
-    path('spare_parts/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart_list'),
-    path('spare_parts/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart_detail'),
+    path('spare_part/', SparePartViewSet.as_view({'get': 'list'}), name='sparepart_list'),
+    path('spare_part/<int:pk>/', SparePartViewSet.as_view({'get': 'retrieve'}), name='sparepart_detail'),
 
-    path('repair_kits/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit_list'),
-    path('repair_kits/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit_detail'),
+    path('repair_kit/', RepairKitViewSet.as_view({'get': 'list'}), name='repairkit_list'),
+    path('repair_kit/<int:pk>/', RepairKitViewSet.as_view({'get': 'retrieve'}), name='repairkit_detail'),
 
     path('catalog/', CatalogListView.as_view(), name='catalog_list'),
 ]

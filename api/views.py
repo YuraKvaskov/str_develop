@@ -175,6 +175,7 @@ class CatalogListView(APIView):
     serializer_class = CatalogItemSerializer
 
     def get(self, request, *args, **kwargs):
+        # Получаем все объекты
         spare_parts = SparePart.objects.all()
         repair_kits = RepairKit.objects.all()
 
@@ -182,26 +183,33 @@ class CatalogListView(APIView):
         engine_cat_id = request.query_params.get('engine_cat')
         group_ids = request.query_params.get('group')
         search = request.query_params.get('search')
+        item_type = request.query_params.get('type')  # новый параметр для фильтрации по типу
 
+        # Фильтруем по engine_cat, если он указан
         if engine_cat_id:
             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
             repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
 
+        # Фильтруем по группам, если указаны
         if group_ids:
             group_ids = group_ids.split(',')
             spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
             repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
 
+        # Фильтруем по поисковому запросу
         if search:
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
 
-        # Объединение QuerySet в список
-        items = list(spare_parts) + list(repair_kits)
+        # Фильтруем по типу: возвращаем либо SparePart, либо RepairKit
+        if item_type == 'spare_part':
+            items = list(spare_parts)  # Только запчасти
+        elif item_type == 'repair_kit':
+            items = list(repair_kits)  # Только ремкомплекты
+        else:
+            # Если тип не указан, возвращаем оба набора данных
+            items = list(spare_parts) + list(repair_kits)
 
-        # Опционально: реализуйте пагинацию, если это необходимо
-        # Вы можете вручную выполнить пагинацию списка 'items' здесь
-
-        # Сериализация объединенного списка
+        # Сериализация объединенного списка или фильтрованного списка
         serializer = self.serializer_class(items, many=True, context={'request': request})
         return Response(serializer.data)
