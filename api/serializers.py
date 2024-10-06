@@ -81,10 +81,21 @@ class SparePartSerializer(serializers.ModelSerializer):
 
 class SparePartListSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
+    materials = MaterialSerializer(many=True)  # сериализация связанных материалов
+    special_feature = serializers.CharField(allow_null=True, allow_blank=True)
+    material_properties = serializers.CharField(allow_null=True, allow_blank=True)
 
     class Meta:
         model = SparePart
-        fields = ['id', 'name', 'article', 'main_image']
+        fields = [
+            'id',
+            'name',
+            'article',
+            'main_image',
+            'materials',  # новое поле
+            'special_feature',  # новое поле
+            'material_properties',  # новое поле
+        ]
 
     def get_main_image(self, obj):
         image = obj.images.first()
