@@ -92,6 +92,22 @@ jobs:
         with:
           submodules: true  # Загружаем подмодули, если они есть
           fetch-depth: 0  # Клонируем весь репозиторий
+      - name: Remove unused Docker images
+        run: |
+          docker image prune -f
+
+      - name: Clean up old Docker containers and images
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            # Останавливаем и удаляем старые контейнеры
+            docker container prune -f
+            
+            # Удаляем старые, неиспользуемые образы
+            docker image prune -f
 
       - name: Copy docker-compose.yaml to server
         uses: appleboy/scp-action@v0.1.7
