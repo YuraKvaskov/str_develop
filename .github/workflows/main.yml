@@ -12,8 +12,8 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          submodules: true  # Загружаем подмодули, если они есть
-          fetch-depth: 0  # Клонируем весь репозиторий
+          submodules: true
+          fetch-depth: 0
 
       - name: Verify backend directory contents
         run: |
@@ -42,78 +42,39 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
 
-  build-frontend:
-    runs-on: ubuntu-latest
-    needs: build-backend  # Ждем завершения сборки backend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: true  # Загружаем подмодули, если они есть
-          fetch-depth: 0  # Клонируем весь репозиторий
-
-      - name: Update submodules
-        run: git submodule update --init --recursive
-        # Обновляем и инициализируем подмодули рекурсивно
-
-      - name: Verify frontend directory contents
-        run: |
-          echo "Current working directory: $(pwd)"
-          echo "Contents of root directory:"
-          ls -la
-          echo "Contents of frontend directory:"
-          ls -la ./frontend
-          echo "Dockerfile contents:"
-          cat ./frontend/Dockerfile
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
-      - name: Build and push frontend image
-        uses: docker/build-push-action@v3
-        with:
-          context: ./frontend  # Указываем директорию как контекст
-          file: ./frontend/Dockerfile  # Путь к Dockerfile внутри подмодуля
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
-
   deploy:
     runs-on: ubuntu-latest
-    needs: [ build-backend, build-frontend ]  # Зависимость от завершения сборки обоих образов
+    needs: build-backend  # Зависимость только от сборки backend
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
         with:
-          submodules: true  # Загружаем подмодули, если они есть
-          fetch-depth: 0  # Клонируем весь репозиторий
+          submodules: true
+          fetch-depth: 0
+
       - name: Remove unused Docker images
         run: |
           docker image prune -f
 
-      - name: Clean up old Docker containers and images
+      - name: Clean up old Docker containers and images on server
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            # Останавливаем и удаляем старые контейнеры
-            docker container prune -f
-            
-            # Удаляем старые, неиспользуемые образы
-            docker image prune -f
+            # Останавливаем и удаляем старые контейнеры и тома
+            cd /root/str
+            docker compose down --volumes --remove-orphans
+
+            # Удаляем старые, неиспользуемые тома (включая frontend_build)
+            docker volume rm $(docker volume ls -qf dangling=true) || true
 
       - name: Copy docker-compose.yaml to server
         uses: appleboy/scp-action@v0.1.7
         with:
-          source: "docker-compose.yaml" # Путь к файлу, как в структуре вашего проекта
-          target: "/root/str/" # Удаленный путь на сервере
+          source: "docker-compose.yaml"
+          target: "/root/str/"
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
@@ -126,7 +87,7 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          strip_components: 1 # Убирает одну вложенность
+          strip_components: 1
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
@@ -137,19 +98,19 @@ jobs:
           script: |
             # Переход в директорию проекта
             cd /root/str
-            
+
             # Проверка наличия docker-compose.yaml
             if [ ! -f docker-compose.yaml ]; then
               echo "docker-compose.yaml not found!"
               exit 1
             fi
             echo "docker-compose.yaml found."
-            
+
             # Создание файла .env с переменными окружения
             rm -f .env
             touch .env
             chmod 600 .env
-            
+
             echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
             echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
             echo DB_NAME=${{ secrets.DB_NAME }} >> .env
@@ -157,14 +118,185 @@ jobs:
             echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
             echo DB_HOST=${{ secrets.DB_HOST }} >> .env
             echo DB_PORT=${{ secrets.DB_PORT }} >> .env
-            
+
             echo "Contents of .env:"
             cat .env
-            
+
             # Запуск docker compose
-            docker compose pull || docker compose pull
-            docker compose up -d --build || docker compose up -d --build
+            docker compose pull
+            docker compose up -d --build
 
       - name: Notify success
         if: success()
         run: echo "Deployment was successful!"
+
+#name: Build, Push and Deploy
+#
+#on:
+#  push:
+#    branches:
+#      - main
+#
+#jobs:
+#  build-backend:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true  # Загружаем подмодули, если они есть
+#          fetch-depth: 0  # Клонируем весь репозиторий
+#
+#      - name: Verify backend directory contents
+#        run: |
+#          echo "Current working directory: $(pwd)"
+#          echo "Contents of root directory:"
+#          ls -la
+#          echo "Dockerfile contents:"
+#          cat Dockerfile || echo "Dockerfile not found!"
+#          echo "Contents of backend directory:"
+#          ls -la ./str || echo "Backend directory not found!"
+#
+#      - name: Set up Docker Buildx
+#        uses: docker/setup-buildx-action@v1
+#
+#      - name: Log in to Docker Hub
+#        uses: docker/login-action@v2
+#        with:
+#          username: ${{ secrets.DOCKER_USERNAME }}
+#          password: ${{ secrets.DOCKER_PASSWORD }}
+#
+#      - name: Build and push backend image
+#        uses: docker/build-push-action@v3
+#        with:
+#          context: .  # Указываем корень репозитория как контекст
+#          file: Dockerfile  # Dockerfile находится в корне репозитория
+#          push: true
+#          tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
+#
+##  build-frontend:
+##    runs-on: ubuntu-latest
+##    needs: build-backend  # Ждем завершения сборки backend
+##    steps:
+##      - name: Checkout code
+##        uses: actions/checkout@v3
+##        with:
+##          submodules: true  # Загружаем подмодули, если они есть
+##          fetch-depth: 0  # Клонируем весь репозиторий
+##
+##      - name: Update submodules
+##        run: git submodule update --init --recursive
+##        # Обновляем и инициализируем подмодули рекурсивно
+##
+##      - name: Verify frontend directory contents
+##        run: |
+##          echo "Current working directory: $(pwd)"
+##          echo "Contents of root directory:"
+##          ls -la
+##          echo "Contents of frontend directory:"
+##          ls -la ./frontend
+##          echo "Dockerfile contents:"
+##          cat ./frontend/Dockerfile
+##
+##      - name: Set up Docker Buildx
+##        uses: docker/setup-buildx-action@v1
+##
+##      - name: Log in to Docker Hub
+##        uses: docker/login-action@v2
+##        with:
+##          username: ${{ secrets.DOCKER_USERNAME }}
+##          password: ${{ secrets.DOCKER_PASSWORD }}
+##
+##      - name: Build and push frontend image
+##        uses: docker/build-push-action@v3
+##        with:
+##          context: ./frontend  # Указываем директорию как контекст
+##          file: ./frontend/Dockerfile  # Путь к Dockerfile внутри подмодуля
+##          push: true
+##          tags: ${{ secrets.DOCKER_USERNAME }}/frontend:latest
+#
+#  deploy:
+#    runs-on: ubuntu-latest
+#    needs: [ build-backend, build-frontend ]  # Зависимость от завершения сборки обоих образов
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: true  # Загружаем подмодули, если они есть
+#          fetch-depth: 0  # Клонируем весь репозиторий
+#      - name: Remove unused Docker images
+#        run: |
+#          docker image prune -f
+#
+#      - name: Clean up old Docker containers and images
+#        uses: appleboy/ssh-action@v0.1.7
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          script: |
+#            # Останавливаем и удаляем старые контейнеры
+#            docker container prune -f
+#
+#            # Удаляем старые, неиспользуемые образы
+#            docker image prune -f
+#
+#      - name: Copy docker-compose.yaml to server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          source: "docker-compose.yaml" # Путь к файлу, как в структуре вашего проекта
+#          target: "/root/str/" # Удаленный путь на сервере
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#
+#      - name: Copy nginx directory to server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          source: "nginx/*"
+#          target: "/root/str/nginx/"
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          strip_components: 1 # Убирает одну вложенность
+#
+#      - name: Deploy to server
+#        uses: appleboy/ssh-action@v0.1.7
+#        with:
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
+#          script: |
+#            # Переход в директорию проекта
+#            cd /root/str
+#
+#            # Проверка наличия docker-compose.yaml
+#            if [ ! -f docker-compose.yaml ]; then
+#              echo "docker-compose.yaml not found!"
+#              exit 1
+#            fi
+#            echo "docker-compose.yaml found."
+#
+#            # Создание файла .env с переменными окружения
+#            rm -f .env
+#            touch .env
+#            chmod 600 .env
+#
+#            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
+#            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
+#            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
+#            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
+#            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
+#            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
+#            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+#
+#            echo "Contents of .env:"
+#            cat .env
+#
+#            # Запуск docker compose
+#            docker compose pull || docker compose pull
+#            docker compose up -d --build || docker compose up -d --build
+#
+#      - name: Notify success
+#        if: success()
+#        run: echo "Deployment was successful!"
