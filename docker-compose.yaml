@@ -34,22 +34,33 @@ services:
 #      - frontend_build:/app/dist  # Том для сборки фронтенда
 #    networks:
 #      - backend_network
-
   nginx:
-    build:
-      context: .
-      dockerfile: nginx/nginx.Dockerfile  # Dockerfile для Nginx
+    image: yuraskv/nginx:latest  # Image on Docker Hub
     ports:
-      - "80:80"  # Публикация порта 80 для доступа к приложению
+      - "80:80"
     volumes:
-      - static_value:/var/html/static/  # Том для статических файлов
-      - media_value:/var/html/media/  # Том для медиа-файлов
-#      - frontend_build:/usr/share/nginx/html  # Том для скомпилированных файлов фронтенда
+      - static_value:/var/html/static/
+      - media_value:/var/html/media/
     depends_on:
-      - backend  # Сначала должен запуститься бэкенд
-#      - frontend  # И затем фронтенд
+      - backend
     networks:
       - backend_network
+
+#  nginx:
+#    build:
+#      context: .
+#      dockerfile: nginx/nginx.Dockerfile  # Dockerfile для Nginx
+#    ports:
+#      - "80:80"  # Публикация порта 80 для доступа к приложению
+#    volumes:
+#      - static_value:/var/html/static/  # Том для статических файлов
+#      - media_value:/var/html/media/  # Том для медиа-файлов
+##      - frontend_build:/usr/share/nginx/html  # Том для скомпилированных файлов фронтенда
+#    depends_on:
+#      - backend  # Сначала должен запуститься бэкенд
+##      - frontend  # И затем фронтенд
+#    networks:
+#      - backend_network
 
 volumes:
   static_value:  # Том для хранения статических файлов

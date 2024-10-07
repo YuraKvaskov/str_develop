@@ -14,17 +14,16 @@
 #EXPOSE 80
 
 
-# Этап сборки фронтенда
 FROM node:20.10.0-alpine as frontend-build
 WORKDIR /app
-COPY ./frontend/package*.json ./
+COPY frontend/package*.json ./
 RUN npm install
-COPY ./frontend/ ./
+COPY frontend/ ./
 RUN npm run build
 
-# Этап сборки Nginx
+# Этап 2: Сборка образа Nginx с скомпилированными файлами
 FROM nginx:1.21.3-alpine
-COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=frontend-build /app/dist /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
 EXPOSE 80
