@@ -12,6 +12,7 @@ from rest_framework.response import Response
 from catalog.models import RepairKit, SparePart, RepairKitPart, Group, Material, EngineCat
 from str.models import Tag, Partner, Engine, City
 from .filters import PartnerFilter, CityFilter
+from .pagination import CatalogPagination
 from .schema_descriptions import repair_kit_search_example, repair_kit_filter_example, spare_part_search_example, spare_part_filter_example
 
 from .serializers import TagSerializer, PartnerSerializer, EngineSerializer, CitySerializer, RepairKitSerializer, \
@@ -173,6 +174,7 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
 
 class CatalogListView(APIView):
     serializer_class = CatalogItemSerializer
+    pagination_class = CatalogPagination
 
     def get(self, request, *args, **kwargs):
         # Получаем все объекты
@@ -203,13 +205,19 @@ class CatalogListView(APIView):
 
         # Фильтруем по типу: возвращаем либо SparePart, либо RepairKit
         if item_type == 'spare_part':
-            items = list(spare_parts)  # Только запчасти
+            items = spare_parts  # Только запчасти
         elif item_type == 'repair_kit':
-            items = list(repair_kits)  # Только ремкомплекты
+            items = repair_kits  # Только ремкомплекты
         else:
             # Если тип не указан, возвращаем оба набора данных
             items = list(spare_parts) + list(repair_kits)
 
-        # Сериализация объединенного списка или фильтрованного списка
-        serializer = self.serializer_class(items, many=True, context={'request': request})
-        return Response(serializer.data)
+        # Применение пагинации
+        paginator = self.pagination_class()
+        paginated_items = paginator.paginate_queryset(items, request)
+
+        # Сериализация пагинированного списка
+        serializer = self.serializer_class(paginated_items, many=True, context={'request': request})
+
+        # Возвращаем пагинированный ответ
+        return paginator.get_paginated_response(serializer.data)
