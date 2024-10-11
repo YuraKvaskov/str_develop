@@ -172,8 +172,11 @@ class CatalogItemSerializer(serializers.Serializer):
                 'name': instance.name,
                 'article': instance.article,
                 'main_image': instance.images.first().image.url if instance.images.exists() else None,
-                'engine_cat': instance.engine_cat.name,  # Выводим имя категории двигателя
-                'groups': [group.name for group in instance.groups.all()],  # Выводим имена групп
+                'engine_cat': {
+                    'id': instance.engine_cat.id,  # Добавляем ID
+                    'name': instance.engine_cat.name  # Выводим имя категории двигателя
+                },
+                'groups': [group.name for group in instance.groups.all()],
             }
         elif isinstance(instance, RepairKit):
             return {
@@ -182,8 +185,11 @@ class CatalogItemSerializer(serializers.Serializer):
                 'name': instance.name,
                 'article': instance.article,
                 'main_image': instance.images.first().image.url if instance.images.exists() else None,
-                'engine_cat': instance.engine_cat.name,  # Выводим имя категории двигателя
-                'groups': [group.name for group in instance.groups.all()],  # Выводим имена групп
+                'engine_cat': {
+                    'id': instance.engine_cat.id,  # Добавляем ID
+                    'name': instance.engine_cat.name  # Выводим имя категории двигателя
+                },
+                'groups': [group.name for group in instance.groups.all()],
             }
         return super().to_representation(instance)
 
