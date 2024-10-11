@@ -96,6 +96,7 @@ class SparePartListSerializer(serializers.ModelSerializer):
             'materials',  # новое поле
             'special_feature',  # новое поле
             'material_properties',  # новое поле
+            'engine_cat',
         ]
 
     def get_main_image(self, obj):
@@ -148,7 +149,7 @@ class RepairKitListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = RepairKit
-        fields = ['id', 'name', 'article', 'main_image']
+        fields = ['id', 'name', 'article', 'main_image', 'engine_cat']
 
     def get_main_image(self, obj):
         image = obj.images.first()
