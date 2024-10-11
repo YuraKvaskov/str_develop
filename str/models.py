@@ -86,7 +86,7 @@ class Partner(models.Model):
     phone = models.CharField(max_length=20)
     website = models.URLField(blank=True)
     tags = models.ManyToManyField('Tag', blank=True)
-    parts_available = models.ManyToManyField(EngineCat, blank=True)
+    parts_available = models.ManyToManyField(EngineCat, related_name='partners', blank=True)
     time_open_weekdays = models.TimeField(null=True, blank=True)
     time_close_weekdays = models.TimeField(null=True, blank=True)
     time_open_saturday = models.TimeField(null=True, blank=True)
