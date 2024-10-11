@@ -84,6 +84,7 @@ class SparePartListSerializer(serializers.ModelSerializer):
     materials = MaterialSerializer(many=True)  # сериализация связанных материалов
     special_feature = serializers.CharField(allow_null=True, allow_blank=True)
     material_properties = serializers.CharField(allow_null=True, allow_blank=True)
+    engine_cat = EngineCatSerializer()
 
     class Meta:
         model = SparePart
@@ -143,6 +144,7 @@ class RepairKitSerializer(serializers.ModelSerializer):
 
 class RepairKitListSerializer(serializers.ModelSerializer):
     main_image = serializers.SerializerMethodField()
+    engine_cat = EngineCatSerializer()
 
     class Meta:
         model = RepairKit
