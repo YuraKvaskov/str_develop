@@ -1,5 +1,3 @@
-from itertools import chain
-
 from django.db.models import Q, Prefetch
 from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,12 +8,12 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from catalog.models import RepairKit, SparePart, RepairKitPart, Group, Material, EngineCat
-from str.models import Tag, Partner, Engine, City
+from str.models import Tag, Partner, City
 from .filters import PartnerFilter, CityFilter
 from .pagination import CatalogPagination
 from .schema_descriptions import repair_kit_search_example, repair_kit_filter_example, spare_part_search_example, spare_part_filter_example
 
-from .serializers import TagSerializer, PartnerSerializer, EngineSerializer, CitySerializer, RepairKitSerializer, \
+from .serializers import TagSerializer, PartnerSerializer, CitySerializer, RepairKitSerializer, \
     SparePartSerializer, CatalogItemSerializer, RepairKitListSerializer, SparePartListSerializer, GroupSerializer, \
     MaterialSerializer, EngineCatSerializer
 
@@ -52,8 +50,8 @@ class EngineListAPIView(APIView):
     List all engines.
     """
     def get(self, request):
-        engines = Engine.objects.all()
-        serializer = EngineSerializer(engines, many=True)
+        engines = EngineCat.objects.all()
+        serializer = EngineCatSerializer(engines, many=True)
         return Response(serializer.data)
 
 
@@ -63,13 +61,13 @@ class EngineDetailAPIView(APIView):
     """
     def get_object(self, pk):
         try:
-            return Engine.objects.get(pk=pk)
-        except Engine.DoesNotExist:
+            return EngineCat.objects.get(pk=pk)
+        except EngineCat.DoesNotExist:
             raise Http404
 
     def get(self, request, pk):
         engine = self.get_object(pk)
-        serializer = EngineSerializer(engine)
+        serializer = EngineCatSerializer(engine)
         return Response(serializer.data)
 
 

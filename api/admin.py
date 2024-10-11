@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from str.models import Partner, Tag, Engine, City
+from str.models import Partner, Tag, City
 
 
 @admin.register(Tag)
@@ -9,10 +9,10 @@ class TagAdmin(admin.ModelAdmin):
     search_fields = ('name',)
 
 
-@admin.register(Engine)
-class EngineAdmin(admin.ModelAdmin):
-    list_display = ('name', 'description')
-    search_fields = ('name',)
+# @admin.register(Engine)
+# class EngineAdmin(admin.ModelAdmin):
+#     list_display = ('name', 'description')
+#     search_fields = ('name',)
 
 
 @admin.register(Partner)

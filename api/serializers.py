@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, Group, Material, EngineCat, \
     RepairKitImage
-from str.models import Tag, Partner, Engine, City
+from str.models import Tag, Partner, City
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -11,14 +11,20 @@ class TagSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class EngineSerializer(serializers.ModelSerializer):
+class EngineCatSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Engine
+        model = EngineCat
         fields = ['id', 'name']
 
 
+# class EngineSerializer(serializers.ModelSerializer):
+#     class Meta:
+#         model = Engine
+#         fields = ['id', 'name']
+
+
 class PartnerSerializer(serializers.ModelSerializer):
-    parts_available = EngineSerializer(many=True)
+    parts_available = EngineCatSerializer(many=True)
     tags = TagSerializer(many=True)
 
     class Meta:
@@ -30,12 +36,6 @@ class CitySerializer(serializers.ModelSerializer):
     class Meta:
         model = City
         fields = ['id', 'name', 'latitude', 'longitude']
-
-
-class EngineCatSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = EngineCat
-        fields = ['id', 'name']
 
 
 class MaterialSerializer(serializers.ModelSerializer):
@@ -153,6 +153,7 @@ class RepairKitListSerializer(serializers.ModelSerializer):
         if image:
             return image.image.url
         return None
+
 
 class CatalogItemSerializer(serializers.Serializer):
     type = serializers.CharField()

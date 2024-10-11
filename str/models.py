@@ -1,13 +1,14 @@
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-from decimal import Decimal
 
 import requests
 import logging
-import math
+
+from catalog.models import EngineCat
 
 logger = logging.getLogger(__name__)
+
 
 class City(models.Model):
     name = models.CharField(max_length=50)
@@ -67,12 +68,12 @@ class Tag(models.Model):
         return self.name
 
 
-class Engine(models.Model):
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=100)
-
-    def __str__(self):
-        return self.name
+# class Engine(models.Model):
+#     name = models.CharField(max_length=50)
+#     description = models.CharField(max_length=100)
+#
+#     def __str__(self):
+#         return self.name
 
 
 class Partner(models.Model):
@@ -85,7 +86,7 @@ class Partner(models.Model):
     phone = models.CharField(max_length=20)
     website = models.URLField(blank=True)
     tags = models.ManyToManyField('Tag', blank=True)
-    parts_available = models.ManyToManyField(Engine, blank=True)
+    parts_available = models.ManyToManyField(EngineCat, blank=True)
     time_open_weekdays = models.TimeField(null=True, blank=True)
     time_close_weekdays = models.TimeField(null=True, blank=True)
     time_open_saturday = models.TimeField(null=True, blank=True)

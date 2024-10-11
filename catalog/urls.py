@@ -1,7 +1,4 @@
-# catalog/urls.py
-
-from django.urls import path, include
-from rest_framework.routers import DefaultRouter
+from django.urls import path
 from api.views import (
     EngineCatViewSet,
     MaterialViewSet,
@@ -9,7 +6,6 @@ from api.views import (
     SparePartViewSet,
     RepairKitViewSet,
     CatalogListView,
-    # CatalogDetailView
 )
 
 urlpatterns = [

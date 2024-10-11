@@ -3,13 +3,14 @@ from django_filters import rest_framework as filters
 from pytz import timezone as tz
 from datetime import datetime
 
-from str.models import Tag, Engine, Partner, City
+from catalog.models import EngineCat
+from str.models import Tag, Partner, City
 
 
 class PartnerFilter(filters.FilterSet):
     name = filters.CharFilter(field_name='name', lookup_expr='icontains')
     tags = filters.ModelMultipleChoiceFilter(field_name='tags', queryset=Tag.objects.all())
-    parts_available = filters.ModelMultipleChoiceFilter(field_name='parts_available', queryset=Engine.objects.all())
+    parts_available = filters.ModelMultipleChoiceFilter(field_name='parts_available', queryset=EngineCat.objects.all())
     open_now = filters.BooleanFilter(method='filter_open_now')
     city = filters.ModelChoiceFilter(field_name='city', queryset=City.objects.all())
 
