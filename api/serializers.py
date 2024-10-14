@@ -107,7 +107,8 @@ class SparePartListSerializer(serializers.ModelSerializer):
 
 
 class RepairKitPartSerializer(serializers.ModelSerializer):
-    spare_part = SparePartListSerializer()
+    # spare_part = SparePartListSerializer()
+    spare_part = SparePartSerializer()
 
     class Meta:
         model = RepairKitPart
