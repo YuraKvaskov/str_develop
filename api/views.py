@@ -190,32 +190,25 @@ class CatalogListView(APIView):
             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
             repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
 
-        # Фильтруем по группам, если указаны
         if group_ids:
             group_ids = group_ids.split(',')
             spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
             repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
 
-        # Фильтруем по поисковому запросу
         if search:
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
 
-        # Фильтруем по типу: возвращаем либо SparePart, либо RepairKit
         if item_type == 'spare_part':
             items = spare_parts  # Только запчасти
         elif item_type == 'repair_kit':
-            items = repair_kits  # Только ремкомплекты
+            items = repair_kits
         else:
-            # Если тип не указан, возвращаем оба набора данных
             items = list(spare_parts) + list(repair_kits)
 
-        # Применение пагинации
         paginator = self.pagination_class()
         paginated_items = paginator.paginate_queryset(items, request)
 
-        # Сериализация пагинированного списка
         serializer = self.serializer_class(paginated_items, many=True, context={'request': request})
 
-        # Возвращаем пагинированный ответ
         return paginator.get_paginated_response(serializer.data)
