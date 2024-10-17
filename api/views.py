@@ -175,17 +175,12 @@ class CatalogListView(APIView):
     pagination_class = CatalogPagination
 
     def get(self, request, *args, **kwargs):
-        # Получаем все объекты
         spare_parts = SparePart.objects.all()
         repair_kits = RepairKit.objects.all()
-
-        # Применение фильтров
         engine_cat_id = request.query_params.get('engine_cat')
         group_ids = request.query_params.get('group')
         search = request.query_params.get('search')
-        item_type = request.query_params.get('type')  # новый параметр для фильтрации по типу
-
-        # Фильтруем по engine_cat, если он указан
+        item_type = request.query_params.get('type')
         if engine_cat_id:
             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
             repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
