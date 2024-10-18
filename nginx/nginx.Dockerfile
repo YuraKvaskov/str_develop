@@ -7,7 +7,7 @@ COPY frontend/ ./
 RUN npm run build
 
 # Этап 2: Сборка образа Nginx с фронтендом
-FROM nginx:1.21.3
+FROM nginx:latest
 COPY nginx/default.conf /etc/nginx/conf.d/default.conf
 COPY --from=frontend-build /app/dist /usr/share/nginx/html
 # SSL сертификаты монтируются при запуске контейнера
