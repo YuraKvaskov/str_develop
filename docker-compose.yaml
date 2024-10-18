@@ -37,7 +37,7 @@ services:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
       - ./nginx/conf.d:/etc/nginx/conf.d  # Файлы конфигурации Nginx
-      - ./nginx/ssl:/etc/letsencrypt  # Сертификаты Let's Encrypt
+      - /root/str/nginx/ssl:/etc/letsencrypt  # Монтируем директорию с сертификатами
     depends_on:
       - backend
     networks:
