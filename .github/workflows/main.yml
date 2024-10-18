@@ -69,7 +69,6 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-backend, build-nginx]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -77,10 +76,10 @@ jobs:
           submodules: true
           fetch-depth: 0
 
-      - name: Проверка наличия docker-compose.yaml в рабочей директории после checkout
+      - name: Проверка наличия docker-compose.yaml после checkout
         run: |
           if [ -f ./docker-compose.yaml ]; then
-            echo "docker-compose.yaml найден:"
+            echo "docker-compose.yaml найден и его содержимое:"
             cat ./docker-compose.yaml
           else
             echo "docker-compose.yaml не найден!"
@@ -100,15 +99,6 @@ jobs:
             cd /root/str
             docker compose down --remove-orphans
 
-      - name: Create nginx directory on server
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            mkdir -p /root/str/nginx/
-
       - name: Копирование docker-compose.yaml на сервер
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -117,8 +107,9 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
+          strip_components: 1
 
-      - name: Проверка наличия docker-compose.yaml на сервере
+      - name: Проверка содержимого docker-compose.yaml на сервере после копирования
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.HOST }}
@@ -126,7 +117,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             if [ -f /root/str/docker-compose.yaml ]; then
-              echo "docker-compose.yaml успешно скопирован на сервер:"
+              echo "docker-compose.yaml успешно скопирован:"
               cat /root/str/docker-compose.yaml
             else
               echo "docker-compose.yaml не найден на сервере!"
@@ -169,18 +160,18 @@ jobs:
             DB_PORT=${{ secrets.DB_PORT }}
           script: |
             cd /root/str
-
+            
             if [ ! -f docker-compose.yaml ]; then
               echo "docker-compose.yaml не найден!"
               exit 1
             fi
             echo "docker-compose.yaml найден."
-
+            
             # Создание файла .env
             rm -f .env
             touch .env
             chmod 600 .env
-
+            
             echo "SECRET_KEY=$SECRET_KEY" >> .env
             echo "DB_ENGINE=$DB_ENGINE" >> .env
             echo "DB_NAME=$DB_NAME" >> .env
@@ -188,10 +179,10 @@ jobs:
             echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
             echo "DB_HOST=$DB_HOST" >> .env
             echo "DB_PORT=$DB_PORT" >> .env
-
+            
             echo "Contents of .env:"
             cat .env
-
+            
             # Запуск обновления образов и контейнеров
             docker compose pull
             docker compose up -d --build
