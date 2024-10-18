@@ -110,19 +110,6 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = GroupSerializer
 
 
-@extend_schema_view(
-    list=extend_schema(
-        parameters=[
-            OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[spare_part_search_example]),
-            OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[spare_part_filter_example]),
-            OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[spare_part_filter_example]),
-        ],
-        examples=[
-            spare_part_search_example,
-            spare_part_filter_example,
-        ]
-    )
-)
 class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = SparePart.objects.all().prefetch_related('materials', 'engine_cat', 'groups', 'images')
     serializer_class = SparePartSerializer
@@ -132,26 +119,23 @@ class SparePartViewSet(viewsets.ReadOnlyModelViewSet):
         'engine_cat': ['exact'],
         'groups__name': ['in'],
     }
+    pagination_class = CatalogPagination
 
     def get_serializer_class(self):
         if self.action == 'list':
             return SparePartListSerializer
         return SparePartSerializer
 
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
-@extend_schema_view(
-    list=extend_schema(
-        parameters=[
-            OpenApiParameter(name='search', description='Поиск по названию или артикулу', required=False, type=str, examples=[repair_kit_search_example]),
-            OpenApiParameter(name='engine_cat', description='Фильтрация по категории двигателя', required=False, type=int, examples=[repair_kit_filter_example]),
-            OpenApiParameter(name='groups__name', description='Фильтрация по группам запчастей', required=False, type=str, examples=[repair_kit_filter_example]),
-        ],
-        examples=[
-            repair_kit_search_example,
-            repair_kit_filter_example,
-        ]
-    )
-)
+
 class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = RepairKit.objects.all().prefetch_related('materials', 'engine_cat', 'groups', 'images').prefetch_related(
         Prefetch('repairkitpart_set', queryset=RepairKitPart.objects.select_related('spare_part'))
@@ -163,11 +147,21 @@ class RepairKitViewSet(viewsets.ReadOnlyModelViewSet):
         'engine_cat': ['exact'],
         'groups__name': ['in'],
     }
+    pagination_class = CatalogPagination
 
     def get_serializer_class(self):
         if self.action == 'list':
             return RepairKitListSerializer
         return RepairKitSerializer
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
 
 class CatalogListView(APIView):
