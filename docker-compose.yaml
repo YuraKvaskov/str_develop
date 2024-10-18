@@ -36,8 +36,8 @@ services:
     volumes:
       - "static_value:/var/html/static/"
       - "media_value:/var/html/media/"
-      - "/root/str/nginx/default.conf:/etc/nginx/conf.d/default.conf"
-      - "/root/str/nginx/ssl:/etc/letsencrypt"
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf" # Относительный путь
+      - "./nginx/ssl:/etc/letsencrypt"  # Добавьте ssl, если есть
     depends_on:
       - backend
     networks:
@@ -46,8 +46,8 @@ services:
   certbot:
     image: certbot/certbot
     volumes:
-      - "nginx/ssl:/etc/letsencrypt"
-      - "nginx/conf.d:/etc/nginx/conf.d"
+      - "./nginx/ssl:/etc/letsencrypt"
+      - "./nginx/conf.d:/etc/nginx/conf.d"
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
       - backend_network
