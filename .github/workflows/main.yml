@@ -71,7 +71,7 @@ jobs:
 
   deploy:
     runs-on: ubuntu-latest
-    needs: [build-backend, build-nginx]
+    needs: [ build-backend, build-nginx ]
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -92,6 +92,15 @@ jobs:
             cd /root/str
             docker compose down --remove-orphans
 
+      - name: Create nginx directory on server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            mkdir -p /root/str/nginx/
+
       - name: Copy docker-compose.yaml to server
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -110,6 +119,24 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           strip_components: 1
+
+      - name: Проверка наличия файлов в nginx директории
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            ls -la /root/str/nginx
+
+      - name: Проверка содержимого docker-compose.yaml
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cat /root/str/docker-compose.yaml
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v1.1.0
