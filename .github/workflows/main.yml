@@ -113,14 +113,14 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           strip_components: 1
 
-      - name: Copy SSL certificates to server
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          source: "nginx/ssl/*"
-          target: "/root/str/nginx/ssl/"
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
+#      - name: Copy SSL certificates to server
+#        uses: appleboy/scp-action@v0.1.7
+#        with:
+#          source: "nginx/ssl/*"
+#          target: "/root/str/nginx/ssl/"
+#          host: ${{ secrets.HOST }}
+#          username: ${{ secrets.USER }}
+#          key: ${{ secrets.SSH_KEY }}
 
       - name: Deploy to server
         uses: appleboy/ssh-action@v0.1.7
