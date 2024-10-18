@@ -7,7 +7,7 @@ services:
     env_file:
       - ./.env
     volumes:
-      - postgres_data:/var/lib/postgresql/data/
+      - "postgres_data:/var/lib/postgresql/data/"
     networks:
       - backend_network
 
@@ -17,9 +17,9 @@ services:
     env_file:
       - ./.env
     volumes:
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
-      - ./logs:/app/logs
+      - "static_value:/var/html/static/"
+      - "media_value:/var/html/media/"
+      - "./logs:/app/logs"
     depends_on:
       - db
     networks:
@@ -34,10 +34,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - static_value:/var/html/static/
-      - media_value:/var/html/media/
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
-      - /root/str/nginx/ssl:/etc/letsencrypt
+      - "static_value:/var/html/static/"
+      - "media_value:/var/html/media/"
+      - "./nginx/default.conf:/etc/nginx/conf.d/default.conf"
+      - "/root/str/nginx/ssl:/etc/letsencrypt"
     depends_on:
       - backend
     networks:
@@ -46,8 +46,8 @@ services:
   certbot:
     image: certbot/certbot
     volumes:
-      - ./nginx/ssl:/etc/letsencrypt
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - "./nginx/ssl:/etc/letsencrypt"
+      - "./nginx/conf.d:/etc/nginx/conf.d"
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
     networks:
       - backend_network
@@ -59,77 +59,3 @@ volumes:
   static_value:
   media_value:
   postgres_data:
-
-
-#services:
-#  db:
-#    image: postgres:13
-#    restart: always
-#    env_file:
-#      - ./.env  # Файл с переменными окружения для базы данных
-#    volumes:
-#      - postgres_data:/var/lib/postgresql/data/  # Хранение данных базы
-#    networks:
-#      - backend_network
-#
-#  backend:
-#    image: yuraskv/backend:latest  # Образ на Docker Hub
-#    restart: always
-#    env_file:
-#      - ./.env  # Файл с переменными окружения для Django-приложения
-#    volumes:
-#      - static_value:/var/html/static/  # Том для статических файлов
-#      - media_value:/var/html/media/  # Том для медиа-файлов
-#      - ./logs:/app/logs
-#    depends_on:
-#      - db
-#    networks:
-#      - backend_network
-#    expose:
-#      - "8000"  # Порт, который будет использоваться для взаимодействия с Nginx
-#
-##  frontend:
-##    image: yuraskv/frontend:latest  # Образ на Docker Hub
-##    restart: "no"  # Нет необходимости в постоянном перезапуске фронтенда
-##    environment:
-##      - NODE_ENV=production  # Переменная окружения для сборки фронтенда
-##    volumes:
-##      - frontend_build:/app/dist  # Том для сборки фронтенда
-##    networks:
-##      - backend_network
-#  nginx:
-#    image: yuraskv/nginx:latest  # Image on Docker Hub
-#    ports:
-#      - "80:80"
-#    volumes:
-#      - static_value:/var/html/static/
-#      - media_value:/var/html/media/
-#    depends_on:
-#      - backend
-#    networks:
-#      - backend_network
-#
-##  nginx:
-##    build:
-##      context: .
-##      dockerfile: nginx/nginx.Dockerfile  # Dockerfile для Nginx
-##    ports:
-##      - "80:80"  # Публикация порта 80 для доступа к приложению
-##    volumes:
-##      - static_value:/var/html/static/  # Том для статических файлов
-##      - media_value:/var/html/media/  # Том для медиа-файлов
-###      - frontend_build:/usr/share/nginx/html  # Том для скомпилированных файлов фронтенда
-##    depends_on:
-##      - backend  # Сначала должен запуститься бэкенд
-###      - frontend  # И затем фронтенд
-##    networks:
-##      - backend_network
-#
-#volumes:
-#  static_value:  # Том для хранения статических файлов
-#  media_value:  # Том для хранения медиа-файлов
-#  postgres_data:  # Том для хранения данных PostgreSQL
-##  frontend_build:  # Том для хранения собранных файлов фронтенда
-#
-#networks:
-#  backend_network:  # Общая сеть для всех контейнеров
