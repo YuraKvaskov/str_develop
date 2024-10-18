@@ -171,33 +171,80 @@ class CatalogListView(APIView):
     def get(self, request, *args, **kwargs):
         spare_parts = SparePart.objects.all()
         repair_kits = RepairKit.objects.all()
-        engine_cat_id = request.query_params.get('engine_cat')
+
+        # Получение параметров запроса
+        engine_cat_ids = request.query_params.getlist('engine_cat')  # Получаем список значений engine_cat
         group_ids = request.query_params.get('group')
         search = request.query_params.get('search')
         item_type = request.query_params.get('type')
-        if engine_cat_id:
-            spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
-            repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
 
+        # Фильтрация по engine_cat (если передано несколько значений)
+        if engine_cat_ids:
+            spare_parts = spare_parts.filter(engine_cat__id__in=engine_cat_ids)
+            repair_kits = repair_kits.filter(engine_cat__id__in=engine_cat_ids)
+
+        # Фильтрация по группам (если передано)
         if group_ids:
             group_ids = group_ids.split(',')
             spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
             repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
 
+        # Фильтрация по строке поиска (если передано)
         if search:
             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
 
+        # Фильтрация по типу (если передано)
         if item_type == 'spare_part':
             items = spare_parts  # Только запчасти
         elif item_type == 'repair_kit':
-            items = repair_kits
+            items = repair_kits  # Только комплекты
         else:
-            items = list(spare_parts) + list(repair_kits)
+            items = list(spare_parts) + list(repair_kits)  # Все вместе
 
+        # Пагинация
         paginator = self.pagination_class()
         paginated_items = paginator.paginate_queryset(items, request)
 
+        # Сериализация и возврат ответа
         serializer = self.serializer_class(paginated_items, many=True, context={'request': request})
-
         return paginator.get_paginated_response(serializer.data)
+
+
+# class CatalogListView(APIView):
+#     serializer_class = CatalogItemSerializer
+#     pagination_class = CatalogPagination
+#
+#     def get(self, request, *args, **kwargs):
+#         spare_parts = SparePart.objects.all()
+#         repair_kits = RepairKit.objects.all()
+#         engine_cat_id = request.query_params.get('engine_cat')
+#         group_ids = request.query_params.get('group')
+#         search = request.query_params.get('search')
+#         item_type = request.query_params.get('type')
+#         if engine_cat_id:
+#             spare_parts = spare_parts.filter(engine_cat_id=engine_cat_id)
+#             repair_kits = repair_kits.filter(engine_cat_id=engine_cat_id)
+#
+#         if group_ids:
+#             group_ids = group_ids.split(',')
+#             spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
+#             repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
+#
+#         if search:
+#             spare_parts = spare_parts.filter(Q(name__icontains=search) | Q(article__icontains=search))
+#             repair_kits = repair_kits.filter(Q(name__icontains=search) | Q(article__icontains=search))
+#
+#         if item_type == 'spare_part':
+#             items = spare_parts  # Только запчасти
+#         elif item_type == 'repair_kit':
+#             items = repair_kits
+#         else:
+#             items = list(spare_parts) + list(repair_kits)
+#
+#         paginator = self.pagination_class()
+#         paginated_items = paginator.paginate_queryset(items, request)
+#
+#         serializer = self.serializer_class(paginated_items, many=True, context={'request': request})
+#
+#         return paginator.get_paginated_response(serializer.data)
