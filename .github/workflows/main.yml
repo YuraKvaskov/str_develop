@@ -6,59 +6,48 @@ on:
       - main
 
 jobs:
-  build-backend:
+  build:
     runs-on: ubuntu-latest
     steps:
+      # 1. Checkout кода из репозитория
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Verify backend directory contents
+      # 2. Проверка наличия нужных файлов
+      - name: Проверка структуры проекта
         run: |
-          echo "Current working directory: $(pwd)"
-          echo "Contents of root directory:"
+          echo "Проверка текущей директории:"
+          pwd
+          echo "Содержимое директории:"
           ls -la
-          echo "Contents of backend directory:"
-          ls -la ./str || echo "Backend directory not found!"
+          echo "Содержимое директории nginx:"
+          ls -la ./nginx
+          echo "Содержимое Docker Compose файла:"
+          cat docker-compose.yaml
 
+      # 3. Сборка фронтенда
+      - name: Build frontend
+        run: |
+          cd frontend
+          npm install
+          npm run build
+        working-directory: ./frontend
+
+      # 4. Настройка Docker Buildx
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
 
+      # 5. Вход в Docker Hub
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build and push backend image
-        uses: docker/build-push-action@v3
-        with:
-          context: .
-          file: Dockerfile
-          push: true
-          tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
-
-  build-nginx:
-    runs-on: ubuntu-latest
-    needs: build-backend
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-        with:
-          submodules: true
-          fetch-depth: 0
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Log in to Docker Hub
-        uses: docker/login-action@v2
-        with:
-          username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
-
+      # 6. Сборка и пуш образа Nginx
       - name: Build and push nginx image
         uses: docker/build-push-action@v3
         with:
@@ -67,28 +56,27 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKER_USERNAME }}/nginx:latest
 
+      # 7. Сборка и пуш образа Backend
+      - name: Build and push backend image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: Dockerfile
+          push: true
+          tags: ${{ secrets.DOCKER_USERNAME }}/backend:latest
+
   deploy:
     runs-on: ubuntu-latest
+    needs: build
     steps:
+      # 8. Checkout кода перед деплоем
       - name: Checkout code
         uses: actions/checkout@v3
         with:
           submodules: true
           fetch-depth: 0
 
-      - name: Проверка наличия docker-compose.yaml после checkout
-        run: |
-          if [ -f ./docker-compose.yaml ]; then
-            echo "docker-compose.yaml найден и его содержимое:"
-            cat ./docker-compose.yaml
-          else
-            echo "docker-compose.yaml не найден!"
-            exit 1
-          fi
-
-      - name: Remove unused Docker images
-        run: docker image prune -f
-
+      # 9. Удаление старых контейнеров на сервере
       - name: Clean up old Docker containers and images on server
         uses: appleboy/ssh-action@v1.1.0
         with:
@@ -98,7 +86,9 @@ jobs:
           script: |
             cd /root/str
             docker compose down --remove-orphans
+            docker system prune -f
 
+      # 10. Копирование docker-compose.yaml на сервер
       - name: Копирование docker-compose.yaml на сервер
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -107,23 +97,8 @@ jobs:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          strip_components: 1
 
-      - name: Проверка содержимого docker-compose.yaml на сервере после копирования
-        uses: appleboy/ssh-action@v1.1.0
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USER }}
-          key: ${{ secrets.SSH_KEY }}
-          script: |
-            if [ -f /root/str/docker-compose.yaml ]; then
-              echo "docker-compose.yaml успешно скопирован:"
-              cat /root/str/docker-compose.yaml
-            else
-              echo "docker-compose.yaml не найден на сервере!"
-              exit 1
-            fi
-
+      # 11. Копирование Nginx файлов на сервер
       - name: Копирование nginx директории на сервер
         uses: appleboy/scp-action@v0.1.7
         with:
@@ -134,59 +109,56 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           strip_components: 1
 
-      - name: Проверка содержимого директории nginx на сервере
+      # 12. Проверка наличия файлов на сервере
+      - name: Проверка файлов на сервере
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            echo "Проверка содержимого /root/str/nginx:"
-            ls -la /root/str/nginx
+            echo "Проверка наличия docker-compose.yaml:"
+            cat /root/str/docker-compose.yaml
+            echo "Проверка наличия default.conf:"
+            ls -la /root/str/nginx/default.conf
 
-      - name: Deploy to server
+      # 13. Создание файла .env
+      - name: Создание файла .env на сервере
         uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
-          envs: |
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            DB_ENGINE=${{ secrets.DB_ENGINE }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
           script: |
             cd /root/str
-            
-            if [ ! -f docker-compose.yaml ]; then
-              echo "docker-compose.yaml не найден!"
-              exit 1
-            fi
-            echo "docker-compose.yaml найден."
-            
-            # Создание файла .env
             rm -f .env
             touch .env
             chmod 600 .env
-            
-            echo "SECRET_KEY=$SECRET_KEY" >> .env
-            echo "DB_ENGINE=$DB_ENGINE" >> .env
-            echo "DB_NAME=$DB_NAME" >> .env
-            echo "POSTGRES_USER=$POSTGRES_USER" >> .env
-            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
-            echo "DB_HOST=$DB_HOST" >> .env
-            echo "DB_PORT=$DB_PORT" >> .env
-            
-            echo "Contents of .env:"
+
+            echo "SECRET_KEY=${{ secrets.SECRET_KEY }}" >> .env
+            echo "DB_ENGINE=${{ secrets.DB_ENGINE }}" >> .env
+            echo "DB_NAME=${{ secrets.DB_NAME }}" >> .env
+            echo "POSTGRES_USER=${{ secrets.POSTGRES_USER }}" >> .env
+            echo "POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}" >> .env
+            echo "DB_HOST=${{ secrets.DB_HOST }}" >> .env
+            echo "DB_PORT=${{ secrets.DB_PORT }}" >> .env
+
+            echo "Содержимое файла .env:"
             cat .env
-            
-            # Запуск обновления образов и контейнеров
+
+      # 14. Запуск Docker Compose
+      - name: Запуск Docker Compose
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd /root/str
             docker compose pull
             docker compose up -d --build
 
+      # 15. Уведомление об успешной деплое
       - name: Notify success
         if: success()
         run: echo "Deployment was successful!"
