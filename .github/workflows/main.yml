@@ -26,7 +26,7 @@ jobs:
           ls -la ./str || echo "Backend directory not found!"
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -53,7 +53,7 @@ jobs:
           fetch-depth: 0
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v2
@@ -83,7 +83,7 @@ jobs:
         run: docker image prune -f
 
       - name: Clean up old Docker containers and images on server
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -91,11 +91,9 @@ jobs:
           script: |
             cd /root/str
             docker compose down --remove-orphans
-#            # Удаляем только осиротевшие тома, исключая том с базой данных
-#            docker volume rm $(docker volume ls -qf "dangling=true" | grep -v "postgres_data") || true
 
       - name: Copy docker-compose.yaml to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.10
         with:
           source: "docker-compose.yaml"
           target: "/root/str/"
@@ -104,7 +102,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@v0.1.10
         with:
           source: "nginx/*"
           target: "/root/str/nginx/"
@@ -113,21 +111,20 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           strip_components: 1
 
-#      - name: Copy SSL certificates to server
-#        uses: appleboy/scp-action@v0.1.7
-#        with:
-#          source: "nginx/ssl/*"
-#          target: "/root/str/nginx/ssl/"
-#          host: ${{ secrets.HOST }}
-#          username: ${{ secrets.USER }}
-#          key: ${{ secrets.SSH_KEY }}
-
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.7
+        uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.SSH_KEY }}
+          envs: |
+            SECRET_KEY=${{ secrets.SECRET_KEY }}
+            DB_ENGINE=${{ secrets.DB_ENGINE }}
+            DB_NAME=${{ secrets.DB_NAME }}
+            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
+            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+            DB_HOST=${{ secrets.DB_HOST }}
+            DB_PORT=${{ secrets.DB_PORT }}
           script: |
             cd /root/str
 
@@ -142,13 +139,13 @@ jobs:
             touch .env
             chmod 600 .env
 
-            echo SECRET_KEY=${{ secrets.SECRET_KEY }} >> .env
-            echo DB_ENGINE=${{ secrets.DB_ENGINE }} >> .env
-            echo DB_NAME=${{ secrets.DB_NAME }} >> .env
-            echo POSTGRES_USER=${{ secrets.POSTGRES_USER }} >> .env
-            echo POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }} >> .env
-            echo DB_HOST=${{ secrets.DB_HOST }} >> .env
-            echo DB_PORT=${{ secrets.DB_PORT }} >> .env
+            echo "SECRET_KEY=$SECRET_KEY" >> .env
+            echo "DB_ENGINE=$DB_ENGINE" >> .env
+            echo "DB_NAME=$DB_NAME" >> .env
+            echo "POSTGRES_USER=$POSTGRES_USER" >> .env
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
+            echo "DB_HOST=$DB_HOST" >> .env
+            echo "DB_PORT=$DB_PORT" >> .env
 
             echo "Contents of .env:"
             cat .env
@@ -160,4 +157,3 @@ jobs:
       - name: Notify success
         if: success()
         run: echo "Deployment was successful!"
-
