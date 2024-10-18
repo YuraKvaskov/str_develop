@@ -93,7 +93,7 @@ jobs:
             docker compose down --remove-orphans
 
       - name: Copy docker-compose.yaml to server
-        uses: appleboy/scp-action@v1.1.0
+        uses: appleboy/scp-action@v0.1.7
         with:
           source: "docker-compose.yaml"
           target: "/root/str/"
@@ -102,7 +102,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v1.1.0
+        uses: appleboy/scp-action@v0.1.7
         with:
           source: "nginx/*"
           target: "/root/str/nginx/"
