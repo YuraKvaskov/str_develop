@@ -83,7 +83,7 @@ jobs:
         run: docker image prune -f
 
       - name: Clean up old Docker containers and images on server
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
@@ -93,7 +93,7 @@ jobs:
             docker compose down --remove-orphans
 
       - name: Copy docker-compose.yaml to server
-        uses: appleboy/scp-action@v0.1.9
+        uses: appleboy/scp-action@v1.1.0
         with:
           source: "docker-compose.yaml"
           target: "/root/str/"
@@ -102,7 +102,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.9
+        uses: appleboy/scp-action@v1.1.0
         with:
           source: "nginx/*"
           target: "/root/str/nginx/"
@@ -112,7 +112,7 @@ jobs:
           strip_components: 1
 
       - name: Deploy to server
-        uses: appleboy/ssh-action@v0.1.10
+        uses: appleboy/ssh-action@v1.1.0
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
