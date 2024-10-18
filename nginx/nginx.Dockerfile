@@ -1,4 +1,3 @@
-# Этап 1: Сборка фронтенда (если необходимо)
 FROM node:20.10.0-alpine AS frontend-build
 WORKDIR /app
 COPY frontend/package*.json ./
@@ -13,7 +12,6 @@ COPY --from=frontend-build /app/dist /usr/share/nginx/html
 # SSL сертификаты монтируются при запуске контейнера
 RUN chmod -R 755 /usr/share/nginx/html
 EXPOSE 80 443
-
 
 ### Используем базовый образ Nginx
 ##FROM nginx:1.21.3-alpine

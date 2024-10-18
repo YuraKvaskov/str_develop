@@ -36,7 +36,8 @@ services:
     volumes:
       - static_value:/var/html/static/
       - media_value:/var/html/media/
-      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  # Монтируем файл напрямую
+      - - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+#      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf  # Монтируем файл напрямую
       - /root/str/nginx/ssl:/etc/letsencrypt  # Монтируем директорию с сертификатами
     depends_on:
       - backend
