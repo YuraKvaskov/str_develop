@@ -93,7 +93,7 @@ jobs:
             docker compose down --remove-orphans
 
       - name: Copy docker-compose.yaml to server
-        uses: appleboy/scp-action@v0.1.10  # Убедитесь, что эта версия доступна
+        uses: appleboy/scp-action@v0.1.9
         with:
           source: "docker-compose.yaml"
           target: "/root/str/"
@@ -102,7 +102,7 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
 
       - name: Copy nginx directory to server
-        uses: appleboy/scp-action@v0.1.10  # Убедитесь, что эта версия доступна
+        uses: appleboy/scp-action@v0.1.9
         with:
           source: "nginx/*"
           target: "/root/str/nginx/"
@@ -128,18 +128,18 @@ jobs:
           debug: true
           script: |
             cd /root/str
-      
+
             if [ ! -f docker-compose.yaml ]; then
               echo "docker-compose.yaml not found!"
               exit 1
             fi
             echo "docker-compose.yaml found."
-      
+
             # Создание файла .env
             rm -f .env
             touch .env
             chmod 600 .env
-      
+
             echo "SECRET_KEY=$SECRET_KEY" >> .env
             echo "DB_ENGINE=$DB_ENGINE" >> .env
             echo "DB_NAME=$DB_NAME" >> .env
@@ -147,10 +147,14 @@ jobs:
             echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env
             echo "DB_HOST=$DB_HOST" >> .env
             echo "DB_PORT=$DB_PORT" >> .env
-      
+
             echo "Contents of .env:"
             cat .env
-      
+
             # Запуск обновления образов и контейнеров
             docker compose pull
             docker compose up -d --build
+
+      - name: Notify success
+        if: success()
+        run: echo "Deployment was successful!"
