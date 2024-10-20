@@ -174,7 +174,7 @@ class CatalogListView(APIView):
 
         # Получение параметров запроса
         engine_cat_ids = request.query_params.getlist('engine_cat')  # Получаем список значений engine_cat
-        group_ids = request.query_params.get('group')
+        group_ids = request.query_params.getlist('group')  # Получаем список значений group
         search = request.query_params.get('search')
         item_type = request.query_params.get('type')
 
@@ -183,9 +183,8 @@ class CatalogListView(APIView):
             spare_parts = spare_parts.filter(engine_cat__id__in=engine_cat_ids)
             repair_kits = repair_kits.filter(engine_cat__id__in=engine_cat_ids)
 
-        # Фильтрация по группам (если передано)
+        # Фильтрация по группам (если передано несколько значений)
         if group_ids:
-            group_ids = group_ids.split(',')
             spare_parts = spare_parts.filter(groups__id__in=group_ids).distinct()
             repair_kits = repair_kits.filter(groups__id__in=group_ids).distinct()
 
