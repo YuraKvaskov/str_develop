@@ -8,13 +8,6 @@ class TagAdmin(admin.ModelAdmin):
     list_display = ('name', 'color')
     search_fields = ('name',)
 
-
-# @admin.register(Engine)
-# class EngineAdmin(admin.ModelAdmin):
-#     list_display = ('name', 'description')
-#     search_fields = ('name',)
-
-
 @admin.register(Partner)
 class PartnerAdmin(admin.ModelAdmin):
     list_display = ('name', 'address', 'phone', 'website')

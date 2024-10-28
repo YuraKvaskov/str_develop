@@ -4,8 +4,13 @@ from pathlib import Path
 load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
-LOG_DIR = os.getenv('DJANGO_LOG_DIR', os.path.join(BASE_DIR, 'logs'))
-os.makedirs(LOG_DIR, exist_ok=True)
+if os.getenv('DJANGO_LOG_DIR'):
+    LOG_DIR = os.getenv('DJANGO_LOG_DIR')
+else:
+    LOG_DIR = os.path.join(BASE_DIR, 'logs')
+# os.makedirs(LOG_DIR, exist_ok=True)
+# LOG_DIR = os.getenv('DJANGO_LOG_DIR', os.path.join(BASE_DIR, 'logs'))
+# os.makedirs(LOG_DIR, exist_ok=True)
 SECRET_KEY = os.getenv('SECRET_KEY', 'fallback-secret-key')
 DEBUG = True
 ALLOWED_HOSTS = ['*']
@@ -147,36 +152,38 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,  # Не отключать встроенные логгеры Django
-    'formatters': {
-        'verbose': {
-            'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'file': {
-            'level': 'INFO',  # Для производственной среды обычно устанавливается INFO или выше
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': os.path.join(LOG_DIR, 'debug.log'),  # Лог-файлы в директории logs
-            'maxBytes': 1024*1024*10,  # 10 MB
-            'backupCount': 5,          # Хранить до 5 резервных копий
-            'formatter': 'verbose',
-        },
-        'console': {
-            'level': 'WARNING',  # В производстве можно уменьшить объем консольных логов
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-    },
-    'root': {  # Корневой логгер для всего проекта
-        'handlers': ['file', 'console'],
-        'level': 'INFO',
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,  # Не отключать встроенные логгеры Django
+#     'formatters': {
+#         'verbose': {
+#             'format': '[{asctime}] {levelname} [{name}:{lineno}] {message}',
+#             'style': '{',
+#         },
+#         'simple': {
+#             'format': '{levelname} {message}',
+#             'style': '{',
+#         },
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'INFO',  # Для производственной среды обычно устанавливается INFO или выше
+#             'class': 'logging.handlers.RotatingFileHandler',
+#             'filename': os.path.join(LOG_DIR, 'debug.log'),  # Лог-файлы в директории logs
+#             'maxBytes': 1024*1024*10,  # 10 MB
+#             'backupCount': 5,          # Хранить до 5 резервных копий
+#             'formatter': 'verbose',
+#         },
+#         'console': {
+#             'level': 'WARNING',  # В производстве можно уменьшить объем консольных логов
+#             'class': 'logging.StreamHandler',
+#             'formatter': 'simple',
+#         },
+#     },
+#     'root': {  # Корневой логгер для всего проекта
+#         'handlers': ['file', 'console'],
+#         'level': 'INFO',
+#     },
+# }
+# if not os.path.exists(LOG_DIR):
+#     os.makedirs(LOG_DIR)
