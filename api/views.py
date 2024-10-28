@@ -15,7 +15,7 @@ from .schema_descriptions import repair_kit_search_example, repair_kit_filter_ex
 
 from .serializers import TagSerializer, PartnerSerializer, CitySerializer, RepairKitSerializer, \
     SparePartSerializer, CatalogItemSerializer, RepairKitListSerializer, SparePartListSerializer, GroupSerializer, \
-    MaterialSerializer, EngineCatSerializer
+    MaterialSerializer, EngineCatSerializer, BannerSerializer
 
 import logging
 
