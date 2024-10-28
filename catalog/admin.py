@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
+from str.models import Banner
 from .models import (
     EngineCat,
     Material,
@@ -11,6 +12,10 @@ from .models import (
     RepairKitPart, RepairKitImage
 )
 
+
+@admin.register(Banner)
+class BannerAdmin(admin.ModelAdmin):
+    list_display = ('image', 'created_at')
 
 # Inline для изображений запчастей
 class SparePartImageInline(admin.TabularInline):

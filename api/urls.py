@@ -1,7 +1,7 @@
 from django.urls import path, include
 
 from .views import PartnerListView, PartnerDetailView, EngineListAPIView, EngineDetailAPIView, CityListView, \
-    CityDetailView, TagListView
+    CityDetailView, TagListView, BannerView
 
 app_name = 'api'
 
@@ -14,5 +14,5 @@ urlpatterns = [
     path('cities/<int:pk>/', CityDetailView.as_view(), name='city_detail'),
     path('tags/', TagListView.as_view(), name='tag_list'),
     path('catalog/', include('catalog.urls')),  # Добавляем маршруты приложения catalog
-
+    path('banner/', BannerView.as_view(), name='banner'),
 ]

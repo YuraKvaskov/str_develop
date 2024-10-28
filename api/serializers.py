@@ -2,7 +2,13 @@ from rest_framework import serializers
 
 from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, Group, Material, EngineCat, \
     RepairKitImage
-from str.models import Tag, Partner, City
+from str.models import Tag, Partner, City, Banner
+
+
+class BannerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Banner
+        fields = ['image', 'created_at']
 
 
 class TagSerializer(serializers.ModelSerializer):

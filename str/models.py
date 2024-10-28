@@ -10,6 +10,11 @@ from catalog.models import EngineCat
 logger = logging.getLogger(__name__)
 
 
+class Banner(models.Model):
+    image = models.ImageField(upload_to='banners/')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 class City(models.Model):
     name = models.CharField(max_length=50)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)

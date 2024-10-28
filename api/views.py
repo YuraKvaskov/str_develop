@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from catalog.models import RepairKit, SparePart, RepairKitPart, Group, Material, EngineCat
-from str.models import Tag, Partner, City
+from str.models import Tag, Partner, City, Banner
 from .filters import PartnerFilter, CityFilter
 from .pagination import CatalogPagination
 from .schema_descriptions import repair_kit_search_example, repair_kit_filter_example, spare_part_search_example, spare_part_filter_example
@@ -21,6 +21,13 @@ import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+class BannerView(APIView):
+    def get(self, request):
+        banner = Banner.objects.last()  # выбираем последний баннер
+        serializer = BannerSerializer(banner)
+        return Response(serializer.data)
 
 
 class TagListCreate(generics.ListCreateAPIView):
