@@ -25,8 +25,8 @@ logger = logging.getLogger(__name__)
 
 class BannerView(APIView):
     def get(self, request):
-        banner = Banner.objects.last()  # выбираем последний баннер
-        serializer = BannerSerializer(banner)
+        banner = Banner.objects.last()
+        serializer = BannerSerializer(banner, context={'request': request})
         return Response(serializer.data)
 
 

@@ -5,10 +5,24 @@ from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, 
 from str.models import Tag, Partner, City, Banner
 
 
+from rest_framework import serializers
+
+
 class BannerSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+
     class Meta:
         model = Banner
         fields = ['image', 'created_at']
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if request:
+            image_url = obj.image.url
+            return request.build_absolute_uri(image_url)
+        else:
+            return obj.image.url
+
 
 
 class TagSerializer(serializers.ModelSerializer):
