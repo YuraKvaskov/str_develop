@@ -51,6 +51,11 @@ MIDDLEWARE = [
 ]
 # CORS_ALLOW_ALL_ORIGINS = True
 # CORS_ALLOW_CREDENTIALS = True
+SECURE_SSL_REDIRECT = True
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_HSTS_SECONDS = 31536000  # Рекомендуется для продакшн (1 год)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Если сайт использует поддомены
+SECURE_HSTS_PRELOAD = True
 
 CORS_ALLOWED_ORIGINS = [
     'https://stroymashdevelop.ddns.net',
