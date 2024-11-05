@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Banner(models.Model):
-    image = models.ImageField(upload_to='banners/')
+    image = models.ImageField(upload_to='heads/')
     created_at = models.DateTimeField(auto_now_add=True)
 
 
