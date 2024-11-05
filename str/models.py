@@ -1,9 +1,11 @@
+import os
+import requests
+import logging
+
 from django.db import models
 from django.dispatch import receiver
 from django.db.models.signals import post_save
-
-import requests
-import logging
+from django.utils import timezone
 
 from catalog.models import EngineCat
 
@@ -14,6 +16,14 @@ class Banner(models.Model):
     image = models.ImageField(upload_to='heads/')
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def save(self, *args, **kwargs):
+        if self.image:
+            timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+            filename = os.path.basename(self.image.name)
+            new_filename = f"Head_{timestamp}_{filename}"
+            self.image.name = f'heads/{new_filename}'
+
+        super().save(*args, **kwargs)
 
 class City(models.Model):
     name = models.CharField(max_length=50)
