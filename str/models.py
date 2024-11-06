@@ -25,6 +25,7 @@ class Banner(models.Model):
 
         super().save(*args, **kwargs)
 
+
 class City(models.Model):
     name = models.CharField(max_length=50)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
