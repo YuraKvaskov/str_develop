@@ -49,6 +49,7 @@ services:
     volumes:
       - "/etc/letsencrypt:/etc/letsencrypt"
       - "/root/str/nginx/conf.d:/etc/nginx/conf.d"
+      - "./webroot:/var/www/certbot"  # Добавьте webroot для Certbot
 #    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --post-hook \"nginx -s reload\"; sleep 12h & wait $${!}; done;'"
     networks:
       - backend_network
