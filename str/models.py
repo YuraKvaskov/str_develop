@@ -27,7 +27,7 @@ class Banner(models.Model):
 
 
 class City(models.Model):
-    name = models.CharField(max_length=50)
+    name = models.CharField(max_length=50, db_index=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)
 
