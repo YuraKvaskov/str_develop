@@ -87,14 +87,6 @@ class Tag(models.Model):
         return self.name
 
 
-# class Engine(models.Model):
-#     name = models.CharField(max_length=50)
-#     description = models.CharField(max_length=100)
-#
-#     def __str__(self):
-#         return self.name
-
-
 class Partner(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(
