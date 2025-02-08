@@ -58,12 +58,11 @@ SECURE_HSTS_INCLUDE_SUBDOMAINS = True  # Если сайт использует 
 SECURE_HSTS_PRELOAD = True
 
 CORS_ALLOWED_ORIGINS = [
-    'https://stroymashdevelop.ddns.net',
     'http://localhost:5173',
 
 ]
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = ['https://stroymashdevelop.ddns.net']
+CSRF_TRUSTED_ORIGINS = ['https://stroymash-partners.ru']
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = False
 SESSION_COOKIE_SECURE = True
