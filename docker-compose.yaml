@@ -9,7 +9,7 @@ services:
     volumes:
       - "postgres_data:/var/lib/postgresql/data/"
     networks:
-      - str_backend_network  # Изменено!
+      - str_backend_network
 
   backend:
     image: yuraskv/backend:latest
@@ -23,7 +23,7 @@ services:
     depends_on:
       - db
     networks:
-      - str_backend_network  # Изменено!
+      - str_backend_network
     expose:
       - "8000"
 
@@ -42,7 +42,7 @@ services:
     depends_on:
       - backend
     networks:
-      - str_backend_network  # Изменено!
+      - str_backend_network
 
   certbot:
     image: certbot/certbot
@@ -53,10 +53,11 @@ services:
       - "/var/run/docker.sock:/var/run/docker.sock"
     entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew --post-hook \"nginx -s reload\"; sleep 12h & wait $${!}; done;'"
     networks:
-      - str_backend_network  # Изменено!
+      - str_backend_network
 
 networks:
-  str_backend_network:  # Изменено!
+  str_backend_network:
+    name: str_backend_network  # Фиксируем точное имя сети
 
 volumes:
   static_value:
