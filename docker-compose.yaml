@@ -1,4 +1,4 @@
-version: '3'
+version: '3.9'
 
 services:
   db:
@@ -57,12 +57,7 @@ services:
 
 networks:
   str_backend_network:
-    name: str_backend_network  # Фиксируем точное имя сети
-
-volumes:
-  static_value:
-  media_value:
-  postgres_data:
+    driver: bridge
 
 
 #version: '3'
