@@ -56,7 +56,13 @@ services:
       - backend_network
 
 networks:
-  backend_network:
+  str_backend_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+#networks:
+#  backend_network:
 
 volumes:
   static_value:
