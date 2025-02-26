@@ -56,7 +56,7 @@ services:
       - backend_network
 
 networks:
-  str_backend_network:
+  backend_network:
     driver: bridge
     ipam:
       config:
