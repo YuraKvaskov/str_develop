@@ -1,6 +1,13 @@
 from django.contrib import admin
 
-from str.models import Partner, Tag, City
+from str.models import Partner, Tag, City, OrderRequest
+
+
+@admin.register(OrderRequest)
+class OrderRequestAdmin(admin.ModelAdmin):
+    list_display = ['recipient_name', 'delivery_address', 'phone_number', 'created_at']
+    search_fields = ['recipient_name', 'phone_number', 'delivery_address']
+    list_filter = ['created_at']
 
 
 @admin.register(Tag)

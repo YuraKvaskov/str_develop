@@ -1,11 +1,24 @@
+import re
+
 from rest_framework import serializers
 
 from catalog.models import RepairKit, SparePart, RepairKitPart, SparePartImage, Group, Material, EngineCat, \
     RepairKitImage
-from str.models import Tag, Partner, City, Banner
-
+from str.models import Tag, Partner, City, Banner, OrderRequest
 
 from rest_framework import serializers
+
+
+class OrderRequestSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderRequest
+        fields = ['recipient_name', 'delivery_address', 'phone_number']
+
+    def validate_phone_number(self, value):
+        if value:
+            if not re.match(r'^[\d\s\-\+\(\)]+$', value):
+                raise serializers.ValidationError('Телефон может содержать только цифры и спецсимволы: +-() ')
+        return value
 
 
 class BannerSerializer(serializers.ModelSerializer):

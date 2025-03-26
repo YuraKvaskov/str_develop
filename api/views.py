@@ -3,6 +3,7 @@ from django.http import Http404
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import generics, filters, viewsets
+from rest_framework import status
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -15,12 +16,29 @@ from .schema_descriptions import repair_kit_search_example, repair_kit_filter_ex
 
 from .serializers import TagSerializer, PartnerSerializer, CitySerializer, RepairKitSerializer, \
     SparePartSerializer, CatalogItemSerializer, RepairKitListSerializer, SparePartListSerializer, GroupSerializer, \
-    MaterialSerializer, EngineCatSerializer, BannerSerializer
+    MaterialSerializer, EngineCatSerializer, BannerSerializer, OrderRequestSerializer
 
 import logging
 
 
 logger = logging.getLogger(__name__)
+
+
+class OrderRequestView(APIView):
+    def post(self, request, *args, **kwargs):
+        serializer = OrderRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            order = serializer.save()  # Сохраняем в БД
+
+            logger.info(
+                f"Новый заказ от {order.recipient_name}, адрес: {order.delivery_address}, телефон: {order.phone_number}")
+
+            return Response(
+                {"message": "Запрос успешно отправлен!"},
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class BannerView(APIView):
