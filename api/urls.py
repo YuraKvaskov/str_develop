@@ -16,5 +16,4 @@ urlpatterns = [
     path('catalog/', include('catalog.urls')),  # Добавляем маршруты приложения catalog
     path('head/', BannerView.as_view(), name='head'),
     path('order-request/', OrderRequestView.as_view(), name='order_request'),
-
 ]
