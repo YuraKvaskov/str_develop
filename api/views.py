@@ -26,19 +26,22 @@ logger = logging.getLogger(__name__)
 
 class OrderRequestView(APIView):
     def post(self, request, *args, **kwargs):
-        serializer = OrderRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            order = serializer.save()  # Сохраняем в БД
+        try:
+            serializer = OrderRequestSerializer(data=request.data)
+            if serializer.is_valid():
+                logger.debug(f"Данные перед сохранением: {serializer.validated_data}")
+                order = serializer.save()
+                logger.info(
+                    f"Новый заказ от {order.recipient_name}, адрес: {order.delivery_address}, телефон: {order.phone_number}"
+                )
+                return Response({"message": "Запрос успешно отправлен!"}, status=status.HTTP_201_CREATED)
 
-            logger.info(
-                f"Новый заказ от {order.recipient_name}, адрес: {order.delivery_address}, телефон: {order.phone_number}")
+            logger.warning(f"Ошибка валидации: {serializer.errors}")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-            return Response(
-                {"message": "Запрос успешно отправлен!"},
-                status=status.HTTP_201_CREATED
-            )
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.exception(f"Ошибка при обработке запроса: {e}")
+            return Response({'detail': 'Internal Server Error'}, status=500)
 
 
 class BannerView(APIView):
