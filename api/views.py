@@ -4,7 +4,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from rest_framework import generics, filters, viewsets
 from rest_framework import status
-
+from django.views.decorators.cache import cache_page
+from django.utils.decorators import method_decorator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 
@@ -61,6 +62,7 @@ class TagRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = TagSerializer
 
 
+@method_decorator(cache_page(60 * 60), name='dispatch')  # кэш 1 час
 class PartnerListView(generics.ListAPIView):
     queryset = Partner.objects.all()
     serializer_class = PartnerSerializer
